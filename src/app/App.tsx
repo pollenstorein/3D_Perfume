@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import pollen1 from "./Images/pollen1.jpeg";
 import pollen2 from "./Images/pollen2.jpeg";
 import pollen3 from "./Images/pollen3.jpeg";
+import pollen4 from "./Images/pollen4.jpeg";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -409,7 +410,7 @@ function Hero() {
         style={{ background: "#f0ece8" }}
       >
         <img
-          src={pollen1}
+          src={pollen4}
           alt="Know Pollen signature fragrance"
           className="w-full h-full object-cover"
           style={{ mixBlendMode: "multiply", opacity: 0.92 }}
