@@ -850,7 +850,7 @@ function Footer() {
               </a>
               <a href="https://wa.me/919609180954" target="_blank" rel="noreferrer" className="flex items-start gap-3 group" style={{ textDecoration: "none" }}>
                 <MessageCircle size={13} className="text-black/35 mt-0.5 flex-shrink-0 group-hover:text-black transition-colors" />
-                <span className="text-xs font-medium text-black/60 group-hover:text-black transition-colors">
+                <span className="text-xs font-medium text-black/60 group-hover:text-black transition-colors whitespace-nowrap sm:whitespace-normal">
                   +91 96091 80954
                 </span>
               </a>
