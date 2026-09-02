@@ -25,7 +25,7 @@ const FRAGRANCES = [
     tagline: "Bold. Fierce. Unapologetic.",
     description: "A commanding fragrance that asserts presence before you enter the room. Warm woods, dark musk, and a spark of citrus that lingers all day.",
     notes: ["Dark Musk", "Cedarwood", "Bergamot"],
-    img: pollen1,
+    img: pollen2,
   },
   {
     id: 2,
@@ -33,7 +33,7 @@ const FRAGRANCES = [
     tagline: "Sweet. Seductive. Unforgettable.",
     description: "A rich cherry accord layered over Turkish rose and bitter almond. Deeply sensual, dangerously addictive.",
     notes: ["Black Cherry", "Turkish Rose", "Bitter Almond"],
-    img: pollen2,
+    img: pollen1,
   },
   {
     id: 3,
