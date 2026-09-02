@@ -20,7 +20,7 @@ const FRAGRANCES = [
     tagline: "Bold. Fierce. Unapologetic.",
     description: "A commanding fragrance that asserts presence before you enter the room. Warm woods, dark musk, and a spark of citrus that lingers all day.",
     notes: ["Dark Musk", "Cedarwood", "Bergamot"],
-    img: "https://images.unsplash.com/photo-1524638431109-93d95c968f03?w=800&h=1000&fit=crop&auto=format",
+    img: "/src/app/Images/pollen1.jpeg",
   },
   {
     id: 2,
@@ -28,7 +28,7 @@ const FRAGRANCES = [
     tagline: "Sweet. Seductive. Unforgettable.",
     description: "A rich cherry accord layered over Turkish rose and bitter almond. Deeply sensual, dangerously addictive.",
     notes: ["Black Cherry", "Turkish Rose", "Bitter Almond"],
-    img: "https://images.unsplash.com/photo-1615634260167-c8cdede054de?w=800&h=1000&fit=crop&auto=format",
+    img: "/src/app/Images/pollen2.jpeg",
   },
   {
     id: 3,
@@ -36,7 +36,7 @@ const FRAGRANCES = [
     tagline: "Light. Airy. Effortlessly refined.",
     description: "White orchid petals lifted on a breeze of green tea and white cedar. Purity distilled into a single breath.",
     notes: ["White Orchid", "Green Tea", "White Cedar"],
-    img: "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=800&h=1000&fit=crop&auto=format",
+    img: "/src/app/Images/pollen3.jpeg",
   },
 ];
 
@@ -405,7 +405,7 @@ function Hero() {
         style={{ background: "#f0ece8" }}
       >
         <img
-          src="https://images.unsplash.com/photo-1547887537-6158d64c35b3?w=1200&h=1400&fit=crop&auto=format"
+          src="/src/app/Images/pollen1.jpeg"
           alt="Know Pollen signature fragrance"
           className="w-full h-full object-cover"
           style={{ mixBlendMode: "multiply", opacity: 0.92 }}
