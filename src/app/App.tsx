@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { X, ArrowRight, ArrowLeft, Instagram, Facebook, Mail, MessageCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Facebook, Instagram, Mail, MessageCircle, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -150,7 +150,7 @@ function TopBar({ menuOpen, onMenuToggle }: { menuOpen: boolean; onMenuToggle: (
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-6 md:px-10 transition-all duration-300"
+      className="fixed top-0 left-0 right-0 z-30 px-4 sm:px-6 md:px-10 transition-all duration-300"
       style={{
         height: scrolled ? "56px" : "72px",
         background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.0)",
@@ -158,24 +158,22 @@ function TopBar({ menuOpen, onMenuToggle }: { menuOpen: boolean; onMenuToggle: (
         borderBottom: scrolled ? "1px solid #e8e8e8" : "none",
       }}
     >
-      {/* Left — hamburger */}
-      <HamburgerButton onClick={onMenuToggle} open={menuOpen} />
+      <div className="mx-auto flex h-full w-full max-w-screen-xl items-center justify-between">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <HamburgerButton onClick={onMenuToggle} open={menuOpen} />
+          <span className="text-[10px] sm:text-xs md:text-sm font-bold tracking-[0.22em] sm:tracking-[0.28em] uppercase text-black select-none whitespace-nowrap">
+            Know Pollen
+          </span>
+        </div>
 
-      {/* Center — wordmark */}
-      <div className="absolute left-1/2 -translate-x-1/2">
-        <span className="text-xs md:text-sm font-bold tracking-[0.35em] uppercase text-black select-none">
-          Know Pollen
-        </span>
+        <a
+          href="#shop"
+          className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase bg-black text-white px-3 sm:px-4 md:px-6 py-2.5 hover:bg-neutral-800 transition-colors duration-200"
+          style={{ textDecoration: "none" }}
+        >
+          Buy Now
+        </a>
       </div>
-
-      {/* Right — Buy Now */}
-      <a
-        href="#shop"
-        className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase bg-black text-white px-4 md:px-6 py-2.5 hover:bg-neutral-800 transition-colors duration-200"
-        style={{ textDecoration: "none" }}
-      >
-        Buy Now
-      </a>
     </header>
   );
 }
