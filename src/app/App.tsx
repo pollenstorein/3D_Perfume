@@ -40,6 +40,344 @@ const FRAGRANCES = [
   },
 ];
 
+const AUTH_STORAGE_KEY = "know-pollen-user";
+
+function TopBar({
+  menuOpen,
+  onMenuToggle,
+  user,
+  onOpenAuth,
+  onLogout,
+}: {
+  menuOpen: boolean;
+  onMenuToggle: () => void;
+  user: { name: string; email: string } | null;
+  onOpenAuth: (mode: "login" | "signup") => void;
+  onLogout: () => void;
+}) {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
+
+  return (
+    <header
+      className="fixed top-0 left-0 right-0 z-30 px-4 sm:px-6 md:px-10 transition-all duration-300"
+      style={{
+        height: scrolled ? "56px" : "72px",
+        background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.0)",
+        backdropFilter: scrolled ? "blur(12px)" : "none",
+        borderBottom: scrolled ? "1px solid #e8e8e8" : "none",
+      }}
+    >
+      <div className="mx-auto flex h-full w-full max-w-screen-xl items-center justify-between">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <HamburgerButton onClick={onMenuToggle} open={menuOpen} />
+          <span className="text-[10px] sm:text-xs md:text-sm font-bold tracking-[0.22em] sm:tracking-[0.28em] uppercase text-black select-none whitespace-nowrap">
+            Know Pollen
+          </span>
+        </div>
+
+        {user ? (
+          <div className="flex items-center gap-3">
+            <span className="hidden text-[10px] font-semibold tracking-[0.18em] uppercase text-black md:inline-block">
+              {user.name.split(" ")[0]}
+            </span>
+            <button
+              onClick={onLogout}
+              className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase bg-black text-white px-3 sm:px-4 md:px-6 py-2.5 hover:bg-neutral-800 transition-colors duration-200"
+              style={{ textDecoration: "none", border: "none", cursor: "pointer" }}
+            >
+              Log out
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => onOpenAuth("login")}
+            className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase bg-black text-white px-3 sm:px-4 md:px-6 py-2.5 hover:bg-neutral-800 transition-colors duration-200"
+            style={{ textDecoration: "none", border: "none", cursor: "pointer" }}
+          >
+            Log In
+          </button>
+        )}
+      </div>
+    </header>
+  );
+}
+
+function AuthModal({
+  open,
+  mode,
+  onClose,
+  onSubmit,
+  user,
+}: {
+  open: boolean;
+  mode: "login" | "signup";
+  onClose: () => void;
+  onSubmit: (payload: { name: string; email: string; password: string }) => void;
+  user: { name: string; email: string } | null;
+}) {
+  const [form, setForm] = useState({ name: user?.name ?? "", email: user?.email ?? "", password: "" });
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setForm({
+        name: user?.name ?? "",
+        email: user?.email ?? "",
+        password: "",
+      });
+      setError("");
+    }
+  }, [open, user]);
+
+  if (!open) return null;
+
+  const isSignup = mode === "signup";
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.98 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full max-w-md rounded-[28px] border border-black/10 bg-white p-6 shadow-[0_30px_80px_rgba(0,0,0,0.18)]"
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-[10px] tracking-[0.35em] uppercase text-black/45">Know Pollen</p>
+              <h3 className="mt-2 text-2xl font-bold tracking-tight text-black">
+                {isSignup ? "Create account" : "Welcome back"}
+              </h3>
+            </div>
+            <button
+              onClick={onClose}
+              aria-label="Close login"
+              className="flex h-9 w-9 items-center justify-center border border-black/10 text-black transition-colors hover:bg-black hover:text-white"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          <div className="mb-5 grid grid-cols-2 overflow-hidden rounded-xl border border-black/10 bg-[#f5f5f3] p-1">
+            <button
+              onClick={() => onSubmit({ name: form.name, email: form.email, password: form.password })}
+              className="hidden"
+              type="button"
+              aria-label="Submit form"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setError("");
+                const next = document.querySelector('[data-auth-mode="login"]') as HTMLElement | null;
+                next?.focus();
+                window.dispatchEvent(new CustomEvent("auth-mode-change", { detail: "login" }));
+              }}
+              data-auth-mode="login"
+              className={`rounded-lg px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
+                !isSignup ? "bg-black text-white" : "text-black/65"
+              }`}
+            >
+              Login
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setError("");
+                const next = document.querySelector('[data-auth-mode="signup"]') as HTMLElement | null;
+                next?.focus();
+                window.dispatchEvent(new CustomEvent("auth-mode-change", { detail: "signup" }));
+              }}
+              data-auth-mode="signup"
+              className={`rounded-lg px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
+                isSignup ? "bg-black text-white" : "text-black/65"
+              }`}
+            >
+              Sign up
+            </button>
+          </div>
+
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              onSubmit(form);
+            }}
+            className="space-y-4"
+          >
+            {isSignup && (
+              <div>
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-black/60">
+                  Full name
+                </label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                  className="w-full border border-black/10 bg-[#faf9f7] px-4 py-3 text-sm text-black outline-none transition-colors focus:border-black"
+                  placeholder="Alex Morgan"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-black/60">
+                Email
+              </label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                className="w-full border border-black/10 bg-[#faf9f7] px-4 py-3 text-sm text-black outline-none transition-colors focus:border-black"
+                placeholder="hello@knowpollen.com"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-black/60">
+                Password
+              </label>
+              <input
+                type="password"
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+                className="w-full border border-black/10 bg-[#faf9f7] px-4 py-3 text-sm text-black outline-none transition-colors focus:border-black"
+                placeholder="••••••••"
+              />
+            </div>
+
+            {error && <p className="text-sm text-red-600">{error}</p>}
+
+            <button
+              type="submit"
+              className="mt-2 w-full bg-black px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-neutral-800"
+            >
+              {isSignup ? "Create account" : "Log in"}
+            </button>
+          </form>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+function SideMenu({
+  open,
+  onClose,
+  user,
+  onOpenAuth,
+  onLogout,
+}: {
+  open: boolean;
+  onClose: () => void;
+  user: { name: string; email: string } | null;
+  onOpenAuth: (mode: "login" | "signup") => void;
+  onLogout: () => void;
+}) {
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-40 bg-black/20"
+            onClick={onClose}
+          />
+
+          <motion.aside
+            key="drawer"
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ duration: 0.45, ease: [0.32, 0, 0.08, 1] }}
+            className="fixed top-0 left-0 h-full z-50 bg-white flex flex-col"
+            style={{ width: "min(360px, 85vw)", borderRight: "1px solid #e0e0e0" }}
+          >
+            <div className="flex items-center justify-between px-8 pt-8 pb-6" style={{ borderBottom: "1px solid #e8e8e8" }}>
+              <span className="text-xs tracking-[0.3em] font-semibold text-black uppercase">Menu</span>
+              <button onClick={onClose} className="w-8 h-8 flex items-center justify-center hover:bg-black hover:text-white transition-colors duration-200">
+                <X size={16} />
+              </button>
+            </div>
+
+            <nav className="flex-1 px-8 py-10 flex flex-col gap-1">
+              {NAV_ITEMS.map((item, i) => {
+                if (item.label === "LOG IN") {
+                  return (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        if (user) {
+                          onLogout();
+                          return;
+                        }
+                        onOpenAuth("login");
+                      }}
+                      className="group flex items-center justify-between py-4 text-left text-black border-b border-[#f0f0f0] hover:border-black transition-colors duration-200"
+                      style={{ textDecoration: "none" }}
+                    >
+                      <span className="text-sm font-semibold tracking-[0.12em] uppercase group-hover:translate-x-1 transition-transform duration-200 inline-block">
+                        {user ? "LOG OUT" : item.label}
+                      </span>
+                      <ArrowRight size={13} className="opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                    </button>
+                  );
+                }
+
+                return (
+                  <motion.a
+                    key={item.label}
+                    href={item.href}
+                    initial={{ opacity: 0, x: -16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 + i * 0.055, duration: 0.35 }}
+                    onClick={onClose}
+                    className="group flex items-center justify-between py-4 text-black border-b border-[#f0f0f0] hover:border-black transition-colors duration-200"
+                    style={{ textDecoration: "none" }}
+                  >
+                    <span className="text-sm font-semibold tracking-[0.12em] uppercase group-hover:translate-x-1 transition-transform duration-200 inline-block">
+                      {item.label}
+                    </span>
+                    <ArrowRight size={13} className="opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                  </motion.a>
+                );
+              })}
+            </nav>
+
+            <div className="px-8 pb-10">
+              <p className="text-[10px] tracking-[0.35em] uppercase text-neutral-400">Know Pollen®</p>
+            </div>
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
 // ─── Hamburger / Side Menu ────────────────────────────────────────────────────
 
 function SideMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -134,47 +472,6 @@ function HamburgerButton({ onClick, open }: { onClick: () => void; open: boolean
         />
       ))}
     </button>
-  );
-}
-
-// ─── Top Bar ──────────────────────────────────────────────────────────────────
-
-function TopBar({ menuOpen, onMenuToggle }: { menuOpen: boolean; onMenuToggle: () => void }) {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", fn);
-    return () => window.removeEventListener("scroll", fn);
-  }, []);
-
-  return (
-    <header
-      className="fixed top-0 left-0 right-0 z-30 px-4 sm:px-6 md:px-10 transition-all duration-300"
-      style={{
-        height: scrolled ? "56px" : "72px",
-        background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.0)",
-        backdropFilter: scrolled ? "blur(12px)" : "none",
-        borderBottom: scrolled ? "1px solid #e8e8e8" : "none",
-      }}
-    >
-      <div className="mx-auto flex h-full w-full max-w-screen-xl items-center justify-between">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <HamburgerButton onClick={onMenuToggle} open={menuOpen} />
-          <span className="text-[10px] sm:text-xs md:text-sm font-bold tracking-[0.22em] sm:tracking-[0.28em] uppercase text-black select-none whitespace-nowrap">
-            Know Pollen
-          </span>
-        </div>
-
-        <a
-          href="#shop"
-          className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase bg-black text-white px-3 sm:px-4 md:px-6 py-2.5 hover:bg-neutral-800 transition-colors duration-200"
-          style={{ textDecoration: "none" }}
-        >
-          Buy Now
-        </a>
-      </div>
-    </header>
   );
 }
 
@@ -639,11 +936,11 @@ function Footer() {
                 </span>
               </a>
               <div className="flex gap-3 pt-1">
-                <a href="#" className="text-xs font-semibold text-black/60 hover:text-black transition-colors underline underline-offset-2" style={{ textDecoration: "underline" }}>
+                <a href="https://www.facebook.com/share/1Cv5i38gqB/" className="text-xs font-semibold text-black/60 hover:text-black transition-colors underline underline-offset-2" style={{ textDecoration: "underline" }}>
                   Facebook
                 </a>
                 <span className="text-black/20">|</span>
-                <a href="#" className="text-xs font-semibold text-black/60 hover:text-black transition-colors underline underline-offset-2" style={{ textDecoration: "underline" }}>
+                <a href="https://www.instagram.com/_pollen.co?igsi=dzBrOTkybXl2NHoy" className="text-xs font-semibold text-black/60 hover:text-black transition-colors underline underline-offset-2" style={{ textDecoration: "underline" }}>
                   Instagram
                 </a>
               </div>
@@ -684,13 +981,120 @@ const GLOBAL_STYLES = `
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [user, setUser] = useState<{ name: string; email: string; password?: string } | null>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser) as { name: string; email: string; password?: string };
+        setUser(parsed);
+      } catch {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+  }, [user]);
+
+  const openAuth = (mode: "login" | "signup") => {
+    setAuthMode(mode);
+    setAuthOpen(true);
+  };
+
+  const handleAuthSubmit = ({ name, email, password }: { name: string; email: string; password: string }) => {
+    const cleanedName = name.trim();
+    const cleanedEmail = email.trim().toLowerCase();
+
+    if (!cleanedEmail || !password || (authMode === "signup" && !cleanedName)) {
+      const modal = document.querySelector('[data-auth-error]') as HTMLElement | null;
+      if (modal) {
+        modal.textContent = "Please fill in all required fields.";
+      }
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(cleanedEmail)) {
+      const modal = document.querySelector('[data-auth-error]') as HTMLElement | null;
+      if (modal) {
+        modal.textContent = "Please enter a valid email address.";
+      }
+      return;
+    }
+
+    if (authMode === "login") {
+      const storedUser = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (!storedUser) {
+        const modal = document.querySelector('[data-auth-error]') as HTMLElement | null;
+        if (modal) {
+          modal.textContent = "No account found for this email. Please sign up first.";
+        }
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(storedUser) as { name: string; email: string; password?: string };
+        if (parsed.email !== cleanedEmail || parsed.password !== password) {
+          const modal = document.querySelector('[data-auth-error]') as HTMLElement | null;
+          if (modal) {
+            modal.textContent = "Incorrect email or password.";
+          }
+          return;
+        }
+
+        setUser({ name: parsed.name, email: parsed.email, password: parsed.password });
+      } catch {
+        const modal = document.querySelector('[data-auth-error]') as HTMLElement | null;
+        if (modal) {
+          modal.textContent = "Unable to load your account. Please try again.";
+        }
+        return;
+      }
+    } else {
+      setUser({ name: cleanedName, email: cleanedEmail, password });
+    }
+
+    setAuthOpen(false);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
 
   return (
     <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}>
       <style>{GLOBAL_STYLES}</style>
 
-      <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
-      <TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen(o => !o)} />
+      <SideMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        user={user}
+        onOpenAuth={openAuth}
+        onLogout={handleLogout}
+      />
+      <TopBar
+        menuOpen={menuOpen}
+        onMenuToggle={() => setMenuOpen(o => !o)}
+        user={user}
+        onOpenAuth={openAuth}
+        onLogout={handleLogout}
+      />
+
+      <AuthModal
+        open={authOpen}
+        mode={authMode}
+        onClose={() => setAuthOpen(false)}
+        onSubmit={payload => handleAuthSubmit(payload)}
+        user={user}
+      />
 
       <main>
         <Hero />
