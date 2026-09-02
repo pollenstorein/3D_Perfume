@@ -15,7 +15,7 @@ const NAV_ITEMS = [
   { label: "GET YOUR BUNDLE", href: "#bundle" },
   { label: "KNOW POLLEN", href: "#about" },
   { label: "TRACK ORDER", href: "#track" },
-  { label: "LOG IN", href: "#login" },
+  { label: "BUY NOW", href: "#fragrances" },
 ];
 
 const FRAGRANCES = [
@@ -51,14 +51,12 @@ function TopBar({
   menuOpen,
   onMenuToggle,
   user,
-  onOpenAuth,
-  onLogout,
+  onBuyNow,
 }: {
   menuOpen: boolean;
   onMenuToggle: () => void;
   user: { name: string; email: string } | null;
-  onOpenAuth: (mode: "login" | "signup") => void;
-  onLogout: () => void;
+  onBuyNow: () => void;
 }) {
   const [scrolled, setScrolled] = useState(false);
 
@@ -86,28 +84,20 @@ function TopBar({
           </span>
         </div>
 
-        {user ? (
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
+          {user && (
             <span className="hidden text-[10px] font-semibold tracking-[0.18em] uppercase text-black md:inline-block">
               {user.name.split(" ")[0]}
             </span>
-            <button
-              onClick={onLogout}
-              className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase bg-black text-white px-3 sm:px-4 md:px-6 py-2.5 hover:bg-neutral-800 transition-colors duration-200"
-              style={{ textDecoration: "none", border: "none", cursor: "pointer" }}
-            >
-              Log out
-            </button>
-          </div>
-        ) : (
+          )}
           <button
-            onClick={() => onOpenAuth("login")}
+            onClick={onBuyNow}
             className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase bg-black text-white px-3 sm:px-4 md:px-6 py-2.5 hover:bg-neutral-800 transition-colors duration-200"
             style={{ textDecoration: "none", border: "none", cursor: "pointer" }}
           >
-            Log In
+            Buy Now
           </button>
-        )}
+        </div>
       </div>
     </header>
   );
@@ -274,15 +264,11 @@ function AuthModal({
 function SideMenu({
   open,
   onClose,
-  user,
-  onOpenAuth,
-  onLogout,
+  onBuyNow,
 }: {
   open: boolean;
   onClose: () => void;
-  user: { name: string; email: string } | null;
-  onOpenAuth: (mode: "login" | "signup") => void;
-  onLogout: () => void;
+  onBuyNow: () => void;
 }) {
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -321,24 +307,20 @@ function SideMenu({
 
             <nav className="flex-1 px-8 py-10 flex flex-col gap-1">
               {NAV_ITEMS.map((item, i) => {
-                if (item.label === "LOG IN") {
+                if (item.label === "BUY NOW") {
                   return (
                     <button
                       key={item.label}
                       type="button"
                       onClick={() => {
                         onClose();
-                        if (user) {
-                          onLogout();
-                          return;
-                        }
-                        onOpenAuth("login");
+                        onBuyNow();
                       }}
                       className="group flex items-center justify-between py-4 text-left text-black border-b border-[#f0f0f0] hover:border-black transition-colors duration-200"
                       style={{ textDecoration: "none" }}
                     >
                       <span className="text-sm font-semibold tracking-[0.12em] uppercase group-hover:translate-x-1 transition-transform duration-200 inline-block">
-                        {user ? "LOG OUT" : item.label}
+                        {item.label}
                       </span>
                       <ArrowRight size={13} className="opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                     </button>
@@ -787,8 +769,6 @@ function TrackBanner() {
   );
 }
 
-// ─── Terms & Conditions ──────────────────────────────────────────────────────
-
 function TermsSection({ onBack }: { onBack: () => void }) {
   return (
     <section className="min-h-screen bg-[#faf9f7] px-6 pb-24 pt-32 md:px-16 md:pb-32 md:pt-40">
@@ -1044,8 +1024,13 @@ export default function App() {
     setAuthOpen(false);
   };
 
-  const handleLogout = () => {
-    setUser(null);
+  const handleBuyNow = () => {
+    if (!user) {
+      openAuth("login");
+      return;
+    }
+
+    window.location.hash = "#fragrances";
   };
 
   return (
@@ -1055,16 +1040,13 @@ export default function App() {
       <SideMenu
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
-        user={user}
-        onOpenAuth={openAuth}
-        onLogout={handleLogout}
+        onBuyNow={handleBuyNow}
       />
       <TopBar
         menuOpen={menuOpen}
         onMenuToggle={() => setMenuOpen(o => !o)}
         user={user}
-        onOpenAuth={openAuth}
-        onLogout={handleLogout}
+        onBuyNow={handleBuyNow}
       />
 
       <AuthModal
