@@ -271,6 +271,7 @@ function Hero() {
 
 function FragrancesSection() {
   const [active, setActive] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
   const dragStartX = useRef(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -288,9 +289,9 @@ function FragrancesSection() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
-  const handlePrev = () => { prev(); resetTimer(); };
-  const handleNext = () => { next(); resetTimer(); };
-  const handleDot  = (i: number) => { go(i); resetTimer(); };
+  const handlePrev = () => { prev(); resetTimer(); setDragOffset(0); };
+  const handleNext = () => { next(); resetTimer(); setDragOffset(0); };
+  const handleDot  = (i: number) => { go(i); resetTimer(); setDragOffset(0); };
 
   return (
     <section id="fragrances" className="bg-white" style={{ borderTop: "1px solid #e8e8e8" }}>
@@ -316,17 +317,38 @@ function FragrancesSection() {
       <div
         className="overflow-hidden"
         style={{ touchAction: "pan-y" }}
-        onPointerDown={e => { dragStartX.current = e.clientX; }}
+        onPointerDown={e => {
+          dragStartX.current = e.clientX;
+          setDragOffset(0);
+        }}
+        onPointerMove={e => {
+          if (dragStartX.current === 0) return;
+          const delta = e.clientX - dragStartX.current;
+          setDragOffset(delta);
+        }}
         onPointerUp={e => {
           const delta = dragStartX.current - e.clientX;
+          setDragOffset(0);
+          dragStartX.current = 0;
           if (Math.abs(delta) > 50) { delta > 0 ? handleNext() : handlePrev(); }
         }}
-        onPointerLeave={() => { dragStartX.current = 0; }}
-        onPointerCancel={() => { dragStartX.current = 0; }}
+        onPointerLeave={() => {
+          dragStartX.current = 0;
+          setDragOffset(0);
+        }}
+        onPointerCancel={() => {
+          dragStartX.current = 0;
+          setDragOffset(0);
+        }}
       >
         <div
           className="flex transition-transform duration-500"
-          style={{ transform: `translateX(-${active * 100}%)`, willChange: "transform", transitionTimingFunction: "cubic-bezier(0.32,0,0.08,1)" }}
+          style={{
+            transform: `translateX(calc(-${active * 100}% + ${dragOffset}px))`,
+            willChange: "transform",
+            transitionTimingFunction: "cubic-bezier(0.32,0,0.08,1)",
+            transitionDuration: dragOffset === 0 ? "500ms" : "0ms",
+          }}
         >
           {FRAGRANCES.map((f, i) => (
             <div key={f.id} className="w-full flex-shrink-0 grid grid-cols-1 md:grid-cols-2" style={{ minHeight: "clamp(480px, 72vh, 800px)" }}>
