@@ -113,12 +113,14 @@ function AuthModal({
   mode,
   onClose,
   onSubmit,
+  onModeChange,
   user,
 }: {
   open: boolean;
   mode: "login" | "signup";
   onClose: () => void;
   onSubmit: (payload: { name: string; email: string; password: string }) => void;
+  onModeChange: (mode: "login" | "signup") => void;
   user: { name: string; email: string } | null;
 }) {
   const [form, setForm] = useState({ name: user?.name ?? "", email: user?.email ?? "", password: "" });
@@ -174,20 +176,11 @@ function AuthModal({
 
           <div className="mb-5 grid grid-cols-2 overflow-hidden rounded-xl border border-black/10 bg-[#f5f5f3] p-1">
             <button
-              onClick={() => onSubmit({ name: form.name, email: form.email, password: form.password })}
-              className="hidden"
-              type="button"
-              aria-label="Submit form"
-            />
-            <button
               type="button"
               onClick={() => {
                 setError("");
-                const next = document.querySelector('[data-auth-mode="login"]') as HTMLElement | null;
-                next?.focus();
-                window.dispatchEvent(new CustomEvent("auth-mode-change", { detail: "login" }));
+                onModeChange("login");
               }}
-              data-auth-mode="login"
               className={`rounded-lg px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
                 !isSignup ? "bg-black text-white" : "text-black/65"
               }`}
@@ -198,11 +191,8 @@ function AuthModal({
               type="button"
               onClick={() => {
                 setError("");
-                const next = document.querySelector('[data-auth-mode="signup"]') as HTMLElement | null;
-                next?.focus();
-                window.dispatchEvent(new CustomEvent("auth-mode-change", { detail: "signup" }));
+                onModeChange("signup");
               }}
-              data-auth-mode="signup"
               className={`rounded-lg px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
                 isSignup ? "bg-black text-white" : "text-black/65"
               }`}
@@ -214,7 +204,8 @@ function AuthModal({
           <form
             onSubmit={e => {
               e.preventDefault();
-              onSubmit(form);
+              const clean = { ...form, name: form.name.trim(), email: form.email.trim() };
+              onSubmit(clean);
             }}
             className="space-y-4"
           >
@@ -259,7 +250,8 @@ function AuthModal({
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p data-auth-error className="text-sm text-red-600">{error}</p>}
+            {!error && <p data-auth-error className="sr-only" aria-live="polite" />}
 
             <button
               type="submit"
@@ -368,79 +360,6 @@ function SideMenu({
               })}
             </nav>
 
-            <div className="px-8 pb-10">
-              <p className="text-[10px] tracking-[0.35em] uppercase text-neutral-400">Know Pollen®</p>
-            </div>
-          </motion.aside>
-        </>
-      )}
-    </AnimatePresence>
-  );
-}
-
-// ─── Hamburger / Side Menu ────────────────────────────────────────────────────
-
-function SideMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [open]);
-
-  return (
-    <AnimatePresence>
-      {open && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            key="backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-40 bg-black/20"
-            onClick={onClose}
-          />
-
-          {/* Drawer */}
-          <motion.aside
-            key="drawer"
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ duration: 0.45, ease: [0.32, 0, 0.08, 1] }}
-            className="fixed top-0 left-0 h-full z-50 bg-white flex flex-col"
-            style={{ width: "min(360px, 85vw)", borderRight: "1px solid #e0e0e0" }}
-          >
-            {/* Close */}
-            <div className="flex items-center justify-between px-8 pt-8 pb-6" style={{ borderBottom: "1px solid #e8e8e8" }}>
-              <span className="text-xs tracking-[0.3em] font-semibold text-black uppercase">Menu</span>
-              <button onClick={onClose} className="w-8 h-8 flex items-center justify-center hover:bg-black hover:text-white transition-colors duration-200">
-                <X size={16} />
-              </button>
-            </div>
-
-            {/* Nav links */}
-            <nav className="flex-1 px-8 py-10 flex flex-col gap-1">
-              {NAV_ITEMS.map((item, i) => (
-                <motion.a
-                  key={item.label}
-                  href={item.href}
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 + i * 0.055, duration: 0.35 }}
-                  onClick={onClose}
-                  className="group flex items-center justify-between py-4 text-black border-b border-[#f0f0f0] hover:border-black transition-colors duration-200"
-                  style={{ textDecoration: "none" }}
-                >
-                  <span className="text-sm font-semibold tracking-[0.12em] uppercase group-hover:translate-x-1 transition-transform duration-200 inline-block">
-                    {item.label}
-                  </span>
-                  <ArrowRight size={13} className="opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                </motion.a>
-              ))}
-            </nav>
-
-            {/* Bottom brand */}
             <div className="px-8 pb-10">
               <p className="text-[10px] tracking-[0.35em] uppercase text-neutral-400">Know Pollen®</p>
             </div>
@@ -929,10 +848,10 @@ function Footer() {
                   hello@knowpollen.com
                 </span>
               </a>
-              <a href="https://wa.me/" className="flex items-start gap-3 group" style={{ textDecoration: "none" }}>
+              <a href="https://wa.me/919609180954" target="_blank" rel="noreferrer" className="flex items-start gap-3 group" style={{ textDecoration: "none" }}>
                 <MessageCircle size={13} className="text-black/35 mt-0.5 flex-shrink-0 group-hover:text-black transition-colors" />
                 <span className="text-xs font-medium text-black/60 group-hover:text-black transition-colors">
-                  WhatsApp Us
+                  +91 96091 80954
                 </span>
               </a>
               <div className="flex gap-3 pt-1">
@@ -1093,6 +1012,7 @@ export default function App() {
         mode={authMode}
         onClose={() => setAuthOpen(false)}
         onSubmit={payload => handleAuthSubmit(payload)}
+        onModeChange={setAuthMode}
         user={user}
       />
 
