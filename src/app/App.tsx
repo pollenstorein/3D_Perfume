@@ -2,6 +2,10 @@ import { ArrowLeft, ArrowRight, Facebook, Instagram, Mail, MessageCircle, X } fr
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
+import pollen1 from "./Images/pollen1.jpeg";
+import pollen2 from "./Images/pollen2.jpeg";
+import pollen3 from "./Images/pollen3.jpeg";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
@@ -20,7 +24,7 @@ const FRAGRANCES = [
     tagline: "Bold. Fierce. Unapologetic.",
     description: "A commanding fragrance that asserts presence before you enter the room. Warm woods, dark musk, and a spark of citrus that lingers all day.",
     notes: ["Dark Musk", "Cedarwood", "Bergamot"],
-    img: "/src/app/Images/pollen1.jpeg",
+    img: pollen1,
   },
   {
     id: 2,
@@ -28,7 +32,7 @@ const FRAGRANCES = [
     tagline: "Sweet. Seductive. Unforgettable.",
     description: "A rich cherry accord layered over Turkish rose and bitter almond. Deeply sensual, dangerously addictive.",
     notes: ["Black Cherry", "Turkish Rose", "Bitter Almond"],
-    img: "/src/app/Images/pollen2.jpeg",
+    img: pollen2,
   },
   {
     id: 3,
@@ -36,7 +40,7 @@ const FRAGRANCES = [
     tagline: "Light. Airy. Effortlessly refined.",
     description: "White orchid petals lifted on a breeze of green tea and white cedar. Purity distilled into a single breath.",
     notes: ["White Orchid", "Green Tea", "White Cedar"],
-    img: "/src/app/Images/pollen3.jpeg",
+    img: pollen3,
   },
 ];
 
@@ -405,7 +409,7 @@ function Hero() {
         style={{ background: "#f0ece8" }}
       >
         <img
-          src="/src/app/Images/pollen1.jpeg"
+          src={pollen1}
           alt="Know Pollen signature fragrance"
           className="w-full h-full object-cover"
           style={{ mixBlendMode: "multiply", opacity: 0.92 }}
