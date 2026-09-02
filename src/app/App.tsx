@@ -787,9 +787,57 @@ function TrackBanner() {
   );
 }
 
+// ─── Terms & Conditions ──────────────────────────────────────────────────────
+
+function TermsSection({ onBack }: { onBack: () => void }) {
+  return (
+    <section className="min-h-screen bg-[#faf9f7] px-6 pb-24 pt-32 md:px-16 md:pb-32 md:pt-40">
+      <div className="mx-auto max-w-screen-xl">
+        <button
+          type="button"
+          onClick={onBack}
+          className="mb-16 inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.25em] text-black/55 transition-colors hover:text-black"
+        >
+          <ArrowLeft size={14} />
+          Back to shop
+        </button>
+
+        <div className="grid gap-12 md:grid-cols-[1fr_2fr] md:gap-20">
+          <div>
+            <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.45em] text-black/35">Legal</p>
+            <h1 className="text-[clamp(2.5rem,6vw,5.5rem)] font-extrabold leading-[0.95] tracking-tight text-black">
+              Terms &<br />Conditions
+            </h1>
+            <p className="mt-8 text-[10px] font-semibold uppercase tracking-[0.25em] text-black/35">Last updated: 2 September 2026</p>
+          </div>
+
+          <div className="max-w-2xl space-y-10 border-t border-black/15 pt-8 md:pt-0 md:border-t-0">
+            <p className="text-lg font-light leading-relaxed text-black/75">Welcome to POLLEN.</p>
+            <p className="text-sm leading-relaxed text-black/60">By using our website or placing an order, you agree to these terms.</p>
+
+            {[
+              ["Products", "We do our best to show our products as accurately as possible.\n\nThe colour of a product may look slightly different depending on your screen or device."],
+              ["Pricing", "All prices are shown in Indian Rupees (₹).\n\nThe price shown at checkout applies to your order. Any applicable shipping charges will be shown before you complete your purchase."],
+              ["Orders", "Once your order is placed, you'll receive an order confirmation.\n\nAn order may be cancelled if the product becomes unavailable, there is an incorrect price or product detail on the website, or an order appears to involve fraudulent activity.\n\nIf we've already received your payment, we'll refund the amount paid for a cancelled order."],
+              ["Delivery", "Orders are shipped to the address provided during checkout.\n\nDelivery time can vary depending on your location and the courier service.\n\nPlease check your address and phone number before placing your order."],
+              ["Damaged or incorrect orders", "If your order arrives damaged, leaking, defective, or with the wrong product, contact us within 48 hours of delivery.\n\nPlease send your order number along with clear photos or a video of the product and packaging.\n\nWe'll review the issue and help with the appropriate resolution."],
+              ["Website content", "All POLLEN photographs, designs, text, product names, logos and other website content belong to POLLEN or are used with permission.\n\nPlease contact us before using any of our content elsewhere."],
+            ].map(([heading, copy]) => (
+              <div key={heading} className="border-t border-black/10 pt-6">
+                <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-black">{heading}</h2>
+                <p className="whitespace-pre-line text-sm leading-8 text-black/60">{copy}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
-function Footer() {
+function Footer({ onOpenTerms }: { onOpenTerms: () => void }) {
   return (
     <footer className="bg-white" style={{ borderTop: "1px solid #e8e8e8" }}>
       <div className="max-w-screen-xl mx-auto px-6 md:px-16 py-16 md:py-20">
@@ -835,10 +883,16 @@ function Footer() {
 
             <p className="text-[9px] tracking-[0.4em] uppercase font-bold text-black/35 mt-8 mb-5">Policy</p>
             <div className="space-y-3">
-              {["Privacy Policy", "Terms & Conditions", "Orders & Shipping", "Cancellation", "Refund Policy"].map(p => (
-                <a key={p} href="#" className="block text-xs font-medium text-black/60 hover:text-black transition-colors duration-200" style={{ textDecoration: "none" }}>
-                  {p}
-                </a>
+              { ["Privacy Policy", "Terms & Conditions", "Orders & Shipping", "Cancellation", "Refund Policy"].map(p => (
+                p === "Terms & Conditions" ? (
+                  <button key={p} type="button" onClick={onOpenTerms} className="block text-left text-xs font-medium text-black/60 transition-colors duration-200 hover:text-black">
+                    {p}
+                  </button>
+                ) : (
+                  <a key={p} href="#" className="block text-xs font-medium text-black/60 hover:text-black transition-colors duration-200" style={{ textDecoration: "none" }}>
+                    {p}
+                  </a>
+                )
               ))}
             </div>
           </div>
@@ -905,6 +959,7 @@ const GLOBAL_STYLES = `
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [user, setUser] = useState<{ name: string; email: string; password?: string } | null>(null);
@@ -1022,14 +1077,20 @@ export default function App() {
       />
 
       <main>
-        <Hero />
-        <FragrancesSection />
-        <BundleSection />
-        <AboutSection />
-        <TrackBanner />
+        {termsOpen ? (
+          <TermsSection onBack={() => setTermsOpen(false)} />
+        ) : (
+          <>
+            <Hero />
+            <FragrancesSection />
+            <BundleSection />
+            <AboutSection />
+            <TrackBanner />
+          </>
+        )}
       </main>
 
-      <Footer />
+      {!termsOpen && <Footer onOpenTerms={() => setTermsOpen(true)} />}
     </div>
   );
 }
