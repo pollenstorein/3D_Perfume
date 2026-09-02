@@ -315,20 +315,23 @@ function FragrancesSection() {
       {/* Track — all slides side-by-side, clip with overflow-hidden */}
       <div
         className="overflow-hidden"
+        style={{ touchAction: "pan-y" }}
         onPointerDown={e => { dragStartX.current = e.clientX; }}
         onPointerUp={e => {
           const delta = dragStartX.current - e.clientX;
           if (Math.abs(delta) > 50) { delta > 0 ? handleNext() : handlePrev(); }
         }}
+        onPointerLeave={() => { dragStartX.current = 0; }}
+        onPointerCancel={() => { dragStartX.current = 0; }}
       >
         <div
           className="flex transition-transform duration-500"
           style={{ transform: `translateX(-${active * 100}%)`, willChange: "transform", transitionTimingFunction: "cubic-bezier(0.32,0,0.08,1)" }}
         >
           {FRAGRANCES.map((f, i) => (
-            <div key={f.id} className="w-full flex-shrink-0 grid md:grid-cols-2" style={{ minHeight: "clamp(480px, 72vh, 800px)" }}>
+            <div key={f.id} className="w-full flex-shrink-0 grid grid-cols-1 md:grid-cols-2" style={{ minHeight: "clamp(480px, 72vh, 800px)" }}>
               {/* Image */}
-              <div className="relative overflow-hidden bg-[#f5f0eb]">
+              <div className="relative min-h-[280px] overflow-hidden bg-[#f5f0eb] md:min-h-0">
                 <img
                   src={f.img}
                   alt={f.name}
@@ -367,7 +370,7 @@ function FragrancesSection() {
               </div>
 
               {/* Info */}
-              <div className="flex flex-col justify-center px-8 md:px-16 py-16 gap-8 bg-white">
+              <div className="flex flex-col justify-center px-6 py-10 md:px-16 md:py-16 gap-6 md:gap-8 bg-white">
                 <div>
                   <p className="text-[10px] tracking-[0.4em] uppercase font-semibold text-black/35 mb-4">
                     {String(i + 1).padStart(2, "0")} / {String(FRAGRANCES.length).padStart(2, "0")}
@@ -629,7 +632,7 @@ function Footer() {
         {/* Bottom bar */}
         <div className="pt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4" style={{ borderTop: "1px solid #e8e8e8" }}>
           <p className="text-[10px] text-black/30 tracking-wide">
-            © 2025 Know Pollen. All rights reserved.
+            © 2026 Pollen. All rights reserved.
           </p>
           <p className="text-[10px] text-black/25 tracking-[0.2em] uppercase">
             Crafted in India
@@ -643,7 +646,8 @@ function Footer() {
 // ─── Global styles ────────────────────────────────────────────────────────────
 
 const GLOBAL_STYLES = `
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+  body { overflow-x: hidden; }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: #fff; }
   ::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 2px; }
@@ -660,7 +664,7 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a" }}>
+    <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}>
       <style>{GLOBAL_STYLES}</style>
 
       <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
