@@ -68,7 +68,7 @@ function TopBar({
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-30 px-4 sm:px-6 md:px-10 transition-all duration-300"
+      className="absolute top-0 left-0 right-0 z-30 px-4 sm:px-6 md:px-10 transition-all duration-300"
       style={{
         height: scrolled ? "56px" : "72px",
         background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.0)",
@@ -409,7 +409,7 @@ function Hero() {
         >
           {/* Eyebrow */}
           <p className="text-[10px] tracking-[0.45em] uppercase font-semibold text-black/50 mb-6">
-            ✦ New Collection — 2025
+            ✦ New Collection — 2026
           </p>
 
           {/* Headline */}
@@ -935,6 +935,18 @@ const GLOBAL_STYLES = `
   }
 `;
 
+function scrollToHash(hash: string) {
+  const target = hash === "#" ? null : document.querySelector(hash);
+
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  window.history.pushState(null, "", hash);
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -963,6 +975,22 @@ export default function App() {
       localStorage.removeItem(AUTH_STORAGE_KEY);
     }
   }, [user]);
+
+  useEffect(() => {
+    const handleInternalNavigation = (event: MouseEvent) => {
+      const anchor = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
+      if (!anchor) return;
+
+      const hash = anchor.getAttribute("href");
+      if (!hash) return;
+
+      event.preventDefault();
+      scrollToHash(hash);
+    };
+
+    document.addEventListener("click", handleInternalNavigation);
+    return () => document.removeEventListener("click", handleInternalNavigation);
+  }, []);
 
   const openAuth = (mode: "login" | "signup") => {
     setAuthMode(mode);
@@ -1030,7 +1058,7 @@ export default function App() {
       return;
     }
 
-    window.location.hash = "#fragrances";
+    scrollToHash("#fragrances");
   };
 
   return (
