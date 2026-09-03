@@ -867,9 +867,92 @@ function PrivacyPolicySection({ onBack }: { onBack: () => void }) {
   );
 }
 
+function RefundPolicySection({ onBack }: { onBack: () => void }) {
+  return (
+    <section className="min-h-screen bg-[#faf9f7] px-6 pb-24 pt-32 md:px-16 md:pb-32 md:pt-40">
+      <div className="mx-auto max-w-screen-xl">
+        <button
+          type="button"
+          onClick={onBack}
+          className="mb-16 inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.25em] text-black/55 transition-colors hover:text-black"
+        >
+          <ArrowLeft size={14} />
+          Back to shop
+        </button>
+
+        <div className="grid gap-12 md:grid-cols-[1fr_2fr] md:gap-20">
+          <div>
+            <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.45em] text-black/35">Legal</p>
+            <h1 className="text-[clamp(2.5rem,6vw,5.5rem)] font-extrabold leading-[0.95] tracking-tight text-black">
+              Refund &<br />Exchange<br />Policy
+            </h1>
+            <p className="mt-8 text-[10px] font-semibold uppercase tracking-[0.25em] text-black/35">Last updated: 3 September 2026</p>
+          </div>
+
+          <div className="max-w-2xl space-y-10 border-t border-black/15 pt-8 md:pt-0 md:border-t-0">
+            <div>
+              <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-black">Refund</h2>
+              <p className="whitespace-pre-line text-sm leading-8 text-black/60">We do not offer refunds; however, if the issue is genuine, a gift code of the same value will be provided to the customer.</p>
+            </div>
+            {[
+              ["What we Cover", "We offer replacements or gift codes for orders that arrive damaged, defective, or incorrect. This includes leakage, breakage, or a wrong item being delivered.\n\nAs a fragrance brand our products cannot be returned or resold once opened, items cannot be returned once delivered."],
+              ["How to Raise a Claim", "We cover damaged, defective, or incorrect items. Report within 48 hours of delivery.\n\nWhat you need:\n\n1. Your order number\n2. An unboxing video showing the sealed package, opening and the issue\n3. Photos of the damaged packaging box with shipping label affixed and photos of damaged or wrong item."],
+              ["Contact us", "On WhatsApp: +9196-9180954\n\nEmail: contactpollen@gmail.com"],
+            ].map(([heading, copy]) => (
+              <div key={heading} className="border-t border-black/10 pt-6">
+                <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-black">{heading}</h2>
+                <p className="whitespace-pre-line text-sm leading-8 text-black/60">{copy}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CookiePolicySection({ onBack }: { onBack: () => void }) {
+  return (
+    <section className="min-h-screen bg-[#faf9f7] px-6 pb-24 pt-32 md:px-16 md:pb-32 md:pt-40">
+      <div className="mx-auto max-w-screen-xl">
+        <button
+          type="button"
+          onClick={onBack}
+          className="mb-16 inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.25em] text-black/55 transition-colors hover:text-black"
+        >
+          <ArrowLeft size={14} />
+          Back to shop
+        </button>
+
+        <div className="grid gap-12 md:grid-cols-[1fr_2fr] md:gap-20">
+          <div>
+            <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.45em] text-black/35">Legal</p>
+            <h1 className="text-[clamp(2.5rem,6vw,5.5rem)] font-extrabold leading-[0.95] tracking-tight text-black">
+              Cookie<br />Policy
+            </h1>
+            <p className="mt-8 text-[10px] font-semibold uppercase tracking-[0.25em] text-black/35">Last updated: 3 September 2026</p>
+          </div>
+
+          <div className="max-w-2xl space-y-10 border-t border-black/15 pt-8 md:pt-0 md:border-t-0">
+            <p className="text-lg font-light leading-relaxed text-black/75">POLLEN uses cookies to keep the website working properly and understand how people use it.</p>
+            <p className="text-sm leading-relaxed text-black/60">Some cookies help with things like your cart, checkout and website security.</p>
+            <p className="text-sm leading-relaxed text-black/60">Others help us understand which parts of the website people use, so we can make the experience better.</p>
+            <p className="text-sm leading-relaxed text-black/60">We may also use cookies to understand how our advertising performs.</p>
+
+            <div className="border-t border-black/10 pt-6">
+              <p className="text-sm leading-8 text-black/60">You can manage or turn off cookies through your browser settings.</p>
+              <p className="mt-6 text-sm leading-8 text-black/60">Some parts of the website may not work properly when certain cookies are turned off.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
-function Footer({ onOpenPrivacy, onOpenTerms }: { onOpenPrivacy: () => void; onOpenTerms: () => void }) {
+function Footer({ onOpenPrivacy, onOpenTerms, onOpenRefund, onOpenCookies }: { onOpenPrivacy: () => void; onOpenTerms: () => void; onOpenRefund: () => void; onOpenCookies: () => void }) {
   return (
     <footer className="bg-white" style={{ borderTop: "1px solid #e8e8e8" }}>
       <div className="max-w-screen-xl mx-auto px-6 md:px-16 py-16 md:py-20">
@@ -915,13 +998,21 @@ function Footer({ onOpenPrivacy, onOpenTerms }: { onOpenPrivacy: () => void; onO
 
             <p className="text-[9px] tracking-[0.4em] uppercase font-bold text-black/35 mt-8 mb-5">Policy</p>
             <div className="space-y-3">
-              { ["Privacy Policy", "Terms & Conditions", "Orders & Shipping", "Cancellation", "Refund Policy"].map(p => (
+              { ["Privacy Policy", "Terms & Conditions", "Orders & Shipping", "Cookie Policy", "Refund Policy"].map(p => (
                 p === "Privacy Policy" ? (
                   <button key={p} type="button" onClick={onOpenPrivacy} className="block text-left text-xs font-medium text-black/60 transition-colors duration-200 hover:text-black">
                     {p}
                   </button>
                 ) : p === "Terms & Conditions" ? (
                   <button key={p} type="button" onClick={onOpenTerms} className="block text-left text-xs font-medium text-black/60 transition-colors duration-200 hover:text-black">
+                    {p}
+                  </button>
+                ) : p === "Refund Policy" ? (
+                  <button key={p} type="button" onClick={onOpenRefund} className="block text-left text-xs font-medium text-black/60 transition-colors duration-200 hover:text-black">
+                    {p}
+                  </button>
+                ) : p === "Cookie Policy" ? (
+                  <button key={p} type="button" onClick={onOpenCookies} className="block text-left text-xs font-medium text-black/60 transition-colors duration-200 hover:text-black">
                     {p}
                   </button>
                 ) : (
@@ -1009,6 +1100,8 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
+  const [refundOpen, setRefundOpen] = useState(false);
+  const [cookiesOpen, setCookiesOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [user, setUser] = useState<{ name: string; email: string; password?: string } | null>(null);
@@ -1144,7 +1237,11 @@ export default function App() {
       />
 
       <main>
-        {privacyOpen ? (
+        {cookiesOpen ? (
+          <CookiePolicySection onBack={() => setCookiesOpen(false)} />
+        ) : refundOpen ? (
+          <RefundPolicySection onBack={() => setRefundOpen(false)} />
+        ) : privacyOpen ? (
           <PrivacyPolicySection onBack={() => setPrivacyOpen(false)} />
         ) : termsOpen ? (
           <TermsSection onBack={() => setTermsOpen(false)} />
@@ -1159,8 +1256,13 @@ export default function App() {
         )}
       </main>
 
-      {!privacyOpen && !termsOpen && (
-        <Footer onOpenPrivacy={() => setPrivacyOpen(true)} onOpenTerms={() => setTermsOpen(true)} />
+      {!privacyOpen && !termsOpen && !refundOpen && !cookiesOpen && (
+        <Footer
+          onOpenPrivacy={() => setPrivacyOpen(true)}
+          onOpenTerms={() => setTermsOpen(true)}
+          onOpenRefund={() => setRefundOpen(true)}
+          onOpenCookies={() => setCookiesOpen(true)}
+        />
       )}
     </div>
   );
