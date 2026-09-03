@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowRight, Facebook, Instagram, Mail, MessageCircle, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import pollen1 from "./Images/pollen1.jpeg";
 import pollen2 from "./Images/pollen2.jpeg";
@@ -1142,9 +1142,9 @@ export default function App() {
     return () => document.removeEventListener("click", handleInternalNavigation);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (privacyOpen || termsOpen || refundOpen || cookiesOpen) {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      window.scrollTo(0, 0);
     }
   }, [privacyOpen, termsOpen, refundOpen, cookiesOpen]);
 
