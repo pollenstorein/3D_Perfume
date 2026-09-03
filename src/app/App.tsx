@@ -824,9 +824,52 @@ function TermsSection({ onBack }: { onBack: () => void }) {
   );
 }
 
+function PrivacyPolicySection({ onBack }: { onBack: () => void }) {
+  return (
+    <section className="min-h-screen bg-[#faf9f7] px-6 pb-24 pt-32 md:px-16 md:pb-32 md:pt-40">
+      <div className="mx-auto max-w-screen-xl">
+        <button
+          type="button"
+          onClick={onBack}
+          className="mb-16 inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.25em] text-black/55 transition-colors hover:text-black"
+        >
+          <ArrowLeft size={14} />
+          Back to shop
+        </button>
+
+        <div className="grid gap-12 md:grid-cols-[1fr_2fr] md:gap-20">
+          <div>
+            <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.45em] text-black/35">Legal</p>
+            <h1 className="text-[clamp(2.5rem,6vw,5.5rem)] font-extrabold leading-[0.95] tracking-tight text-black">
+              Privacy<br />Policy
+            </h1>
+            <p className="mt-8 text-[10px] font-semibold uppercase tracking-[0.25em] text-black/35">Last updated: 3 September 2026</p>
+          </div>
+
+          <div className="max-w-2xl space-y-10 border-t border-black/15 pt-8 md:pt-0 md:border-t-0">
+            <p className="text-lg font-light leading-relaxed text-black/75">When you shop with POLLEN, we collect the information needed to process your order and get it to you.</p>
+            <p className="text-sm leading-relaxed text-black/60">This may include your name, phone number, email address, billing address, delivery address and order details.</p>
+
+            {[
+              ["How we use your information", "1. Process and deliver your orders\n2. Send order and delivery updates\n3. Respond to your questions\n4. Process payments\n5. Improve our website and products\n6. Prevent fraud and misuse\n7. Send marketing messages when you've chosen to receive them"],
+              ["Sharing your information", "Some information needs to be shared with the people and services that help us run POLLEN.\n\nThis may include payment providers, courier partners, website providers and customer support services.\n\nWe only share information needed for these services."],
+              ["Your information", "We take reasonable steps to keep your information safe.\n\nIf you have a question about your personal information or want to make a request about it, contact us at contactpollen@gmail.com."],
+            ].map(([heading, copy]) => (
+              <div key={heading} className="border-t border-black/10 pt-6">
+                <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-black">{heading}</h2>
+                <p className="whitespace-pre-line text-sm leading-8 text-black/60">{copy}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
-function Footer({ onOpenTerms }: { onOpenTerms: () => void }) {
+function Footer({ onOpenPrivacy, onOpenTerms }: { onOpenPrivacy: () => void; onOpenTerms: () => void }) {
   return (
     <footer className="bg-white" style={{ borderTop: "1px solid #e8e8e8" }}>
       <div className="max-w-screen-xl mx-auto px-6 md:px-16 py-16 md:py-20">
@@ -873,7 +916,11 @@ function Footer({ onOpenTerms }: { onOpenTerms: () => void }) {
             <p className="text-[9px] tracking-[0.4em] uppercase font-bold text-black/35 mt-8 mb-5">Policy</p>
             <div className="space-y-3">
               { ["Privacy Policy", "Terms & Conditions", "Orders & Shipping", "Cancellation", "Refund Policy"].map(p => (
-                p === "Terms & Conditions" ? (
+                p === "Privacy Policy" ? (
+                  <button key={p} type="button" onClick={onOpenPrivacy} className="block text-left text-xs font-medium text-black/60 transition-colors duration-200 hover:text-black">
+                    {p}
+                  </button>
+                ) : p === "Terms & Conditions" ? (
                   <button key={p} type="button" onClick={onOpenTerms} className="block text-left text-xs font-medium text-black/60 transition-colors duration-200 hover:text-black">
                     {p}
                   </button>
@@ -960,6 +1007,7 @@ function scrollToHash(hash: string) {
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
@@ -1096,7 +1144,9 @@ export default function App() {
       />
 
       <main>
-        {termsOpen ? (
+        {privacyOpen ? (
+          <PrivacyPolicySection onBack={() => setPrivacyOpen(false)} />
+        ) : termsOpen ? (
           <TermsSection onBack={() => setTermsOpen(false)} />
         ) : (
           <>
@@ -1109,7 +1159,9 @@ export default function App() {
         )}
       </main>
 
-      {!termsOpen && <Footer onOpenTerms={() => setTermsOpen(true)} />}
+      {!privacyOpen && !termsOpen && (
+        <Footer onOpenPrivacy={() => setPrivacyOpen(true)} onOpenTerms={() => setTermsOpen(true)} />
+      )}
     </div>
   );
 }
