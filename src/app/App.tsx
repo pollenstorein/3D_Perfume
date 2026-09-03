@@ -59,16 +59,25 @@ function TopBar({
   onBuyNow: () => void;
 }) {
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40);
+    let lastScrollY = window.scrollY;
+
+    const fn = () => {
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 40);
+      setHidden(currentScrollY > lastScrollY && currentScrollY > 80);
+      lastScrollY = currentScrollY;
+    };
+
     window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
   return (
     <header
-      className="absolute top-0 left-0 right-0 z-30 px-4 sm:px-6 md:px-10 transition-all duration-300"
+      className={`absolute top-0 left-0 right-0 z-30 px-4 sm:px-6 md:px-10 transition-all duration-300 ${hidden ? "-translate-y-full" : "translate-y-0"}`}
       style={{
         height: scrolled ? "56px" : "72px",
         background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.0)",
