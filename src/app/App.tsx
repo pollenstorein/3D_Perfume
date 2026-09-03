@@ -1142,6 +1142,12 @@ export default function App() {
     return () => document.removeEventListener("click", handleInternalNavigation);
   }, []);
 
+  useEffect(() => {
+    if (privacyOpen || termsOpen || refundOpen || cookiesOpen) {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [privacyOpen, termsOpen, refundOpen, cookiesOpen]);
+
   const openAuth = (mode: "login" | "signup") => {
     setAuthMode(mode);
     setAuthOpen(true);
