@@ -1,11 +1,11 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 
 import { AuthModal, type User } from "./auth";
-import { AUTH_STORAGE_KEY } from "./data";
 import { Footer } from "./footer";
 import { CookiePolicySection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { SideMenu, TopBar } from "./navigation";
 import { AboutSection, BundleSection, FragrancesSection, Hero, TrackBanner } from "./sections";
+import { getProfile, saveProfile, supabase } from "./supabase";
 
 const GLOBAL_STYLES = `
   html { scroll-behavior: smooth; overflow-x: hidden; }
@@ -35,16 +35,23 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (storedUser) {
-      try { setUser(JSON.parse(storedUser) as User); } catch { localStorage.removeItem(AUTH_STORAGE_KEY); }
-    }
+    let mounted = true;
+    const restoreSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user && mounted) {
+        const fallback = { id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" };
+        setUser(await getProfile(session.user.id, fallback).catch(() => fallback));
+      }
+    };
+    restoreSession();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!session?.user) { setUser(null); return; }
+      const fallback = { id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" };
+      const profile = await getProfile(session.user.id, fallback).catch(() => fallback);
+      if (mounted) setUser(profile);
+    });
+    return () => { mounted = false; subscription.unsubscribe(); };
   }, []);
-
-  useEffect(() => {
-    if (user) localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-    else localStorage.removeItem(AUTH_STORAGE_KEY);
-  }, [user]);
 
   useEffect(() => {
     const handleInternalNavigation = (event: MouseEvent) => {
@@ -72,21 +79,20 @@ export default function App() {
   }, [privacyOpen, termsOpen, refundOpen, cookiesOpen]);
 
   const openAuth = (mode: "login" | "signup") => { setAuthMode(mode); setAuthOpen(true); };
-  const handleAuthSubmit = ({ name, email, password }: { name: string; email: string; password: string }) => {
+  const handleAuthSubmit = async ({ name, email, password }: { name: string; email: string; password: string }) => {
     const cleanedName = name.trim();
     const cleanedEmail = email.trim().toLowerCase();
-    const showError = (message: string) => { const modal = document.querySelector("[data-auth-error]") as HTMLElement | null; if (modal) modal.textContent = message; };
-    if (!cleanedEmail || !password || (authMode === "signup" && !cleanedName)) return showError("Please fill in all required fields.");
-    if (!/\S+@\S+\.\S+/.test(cleanedEmail)) return showError("Please enter a valid email address.");
+    if (!cleanedEmail || !password || (authMode === "signup" && !cleanedName)) throw new Error("Please fill in all required fields.");
+    if (!/\S+@\S+\.\S+/.test(cleanedEmail)) throw new Error("Please enter a valid email address.");
     if (authMode === "login") {
-      const storedUser = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (!storedUser) return showError("No account found for this email. Please sign up first.");
-      try {
-        const parsed = JSON.parse(storedUser) as User;
-        if (parsed.email !== cleanedEmail || parsed.password !== password) return showError("Incorrect email or password.");
-        setUser(parsed);
-      } catch { return showError("Unable to load your account. Please try again."); }
-    } else setUser({ name: cleanedName, email: cleanedEmail, password });
+      const { error } = await supabase.auth.signInWithPassword({ email: cleanedEmail, password });
+      if (error) throw new Error(error.message);
+    } else {
+      const { data, error } = await supabase.auth.signUp({ email: cleanedEmail, password, options: { data: { name: cleanedName } } });
+      if (error) throw new Error(error.message);
+      if (!data.session) throw new Error("Account created. Check your email to confirm your account before logging in.");
+      if (data.user) await saveProfile({ id: data.user.id, name: cleanedName, email: cleanedEmail });
+    }
     setAuthOpen(false);
   };
   const handleBuyNow = () => user ? scrollToHash("#fragrances") : openAuth("login");
