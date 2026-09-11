@@ -62,7 +62,7 @@ export function SideMenu({ open, onClose, onBuyNow, user, onProfileSettings, onS
               <motion.a key={item.label} href={item.href} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.055, duration: 0.35 }} onClick={onClose} className="group flex items-center justify-between py-4 text-black border-b border-[#f0f0f0] hover:border-black transition-colors duration-200" style={{ textDecoration: "none" }}><span className="text-sm font-semibold tracking-[0.12em] uppercase group-hover:translate-x-1 transition-transform duration-200 inline-block">{item.label}</span><ArrowRight size={13} className="opacity-0 group-hover:opacity-100 transition-opacity duration-200" /></motion.a>
             ))}
           </nav>
-          <div className="space-y-5 px-8 pb-[calc(2.5rem+env(safe-area-inset-bottom))]"><p className="text-[10px] tracking-[0.35em] uppercase text-neutral-400">Know Pollen®</p>{user && <button type="button" onClick={() => { onClose(); onSignOut(); }} className="w-full border-t border-[#e8e8e8] pt-5 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-black/60 hover:text-black">Log out</button>}</div>
+          <div className="space-y-5 px-8 pb-[calc(2.5rem+env(safe-area-inset-bottom))]">{user && <button type="button" onClick={() => { onClose(); onSignOut(); }} className="w-full border-t border-[#e8e8e8] pt-5 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-black/60 hover:text-black">Log out</button>}<p className="text-[10px] tracking-[0.35em] uppercase text-neutral-400">Know Pollen®</p></div>
         </motion.aside>
       </>}
     </AnimatePresence>
