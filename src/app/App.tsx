@@ -6,7 +6,7 @@ import { Footer } from "./footer";
 import { CookiePolicySection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
 import { AboutSection, BundleSection, FragrancesSection, Hero, TrackBanner } from "./sections";
-import { createOrder, getProfile, saveProfile, supabase } from "./supabase";
+import { createOrder, supabase, syncProfile } from "./supabase";
 
 const GLOBAL_STYLES = `
   html { scroll-behavior: smooth; overflow-x: hidden; }
@@ -63,8 +63,7 @@ export default function App() {
       if (session?.user && mounted) {
         setAuthProvider(session.user.app_metadata.provider ?? "email");
         const fallback = { id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" };
-        await saveProfile({ id: fallback.id, email: fallback.email });
-        const profile = await getProfile(session.user.id, fallback).catch(() => fallback);
+        const profile = await syncProfile(fallback.id, fallback.email).catch(() => ({ id: fallback.id, email: fallback.email }));
         setUser({ ...profile, name: fallback.name });
       }
     };
@@ -74,8 +73,7 @@ export default function App() {
       setAuthProvider(session.user.app_metadata.provider ?? "email");
       returnToHome();
       const fallback = { id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" };
-      await saveProfile({ id: fallback.id, email: fallback.email });
-      const profile = await getProfile(session.user.id, fallback).catch(() => fallback);
+      const profile = await syncProfile(fallback.id, fallback.email).catch(() => ({ id: fallback.id, email: fallback.email }));
       if (mounted) setUser({ ...profile, name: fallback.name });
     });
     return () => { mounted = false; subscription.unsubscribe(); };
@@ -119,7 +117,6 @@ export default function App() {
       const { data, error } = await supabase.auth.signUp({ email: cleanedEmail, password, options: { data: { name: cleanedName } } });
       if (error) throw new Error(error.message);
       if (!data.session) throw new Error("Account created. Check your email to confirm your account before logging in.");
-      if (data.user) await saveProfile({ id: data.user.id, email: cleanedEmail });
     }
     setAuthOpen(false);
     returnToHome();

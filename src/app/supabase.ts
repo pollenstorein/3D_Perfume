@@ -13,14 +13,18 @@ export type Profile = {
 export async function getProfile(userId: string, fallback: Profile): Promise<Profile> {
   const { data, error } = await supabase.from("profiles").select("id, email").eq("id", userId).maybeSingle();
   if (error) throw error;
-  if (data) return data;
-  await saveProfile(fallback);
-  return fallback;
+  return data ?? fallback;
 }
 
 export async function saveProfile(profile: Profile) {
   const { error } = await supabase.from("profiles").upsert(profile, { onConflict: "id" });
   if (error) throw error;
+}
+
+export async function syncProfile(userId: string, email: string): Promise<Profile> {
+  const profile = { id: userId, email };
+  await saveProfile(profile);
+  return getProfile(userId, profile);
 }
 
 export type Order = {
