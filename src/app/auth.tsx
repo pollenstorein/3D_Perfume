@@ -1,8 +1,16 @@
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 export type User = { id?: string; name: string; email: string; password?: string };
+
+export type ProfileSettingsProps = {
+  open: boolean;
+  user: User | null;
+  provider: string;
+  onClose: () => void;
+  onPasswordChange: (password: string) => Promise<void>;
+};
 
 type AuthModalProps = {
   open: boolean;
@@ -47,4 +55,36 @@ export function AuthModal({ open, mode, onClose, onSubmit, onGoogleSignIn, onMod
       </motion.div>
     </motion.div>
   </AnimatePresence>;
+}
+
+export function ProfileSettings({ open, user, provider, onClose, onPasswordChange }: ProfileSettingsProps) {
+  const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const isGoogleUser = provider === "google";
+
+  useEffect(() => {
+    if (open) { setPassword(""); setConfirmation(""); setMessage(""); setError(""); }
+  }, [open]);
+
+  if (!open || !user) return null;
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(""); setMessage("");
+    if (password.length < 6) return setError("Password must be at least 6 characters.");
+    if (password !== confirmation) return setError("Passwords do not match.");
+    setSubmitting(true);
+    try {
+      await onPasswordChange(password);
+      setPassword(""); setConfirmation("");
+      setMessage(isGoogleUser ? "Password created successfully." : "Password updated successfully.");
+    } catch (passwordError) {
+      setError(passwordError instanceof Error ? passwordError.message : "Unable to update your password.");
+    } finally { setSubmitting(false); }
+  };
+
+  return <AnimatePresence><motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[90] flex items-center justify-center bg-black/40 p-4" onClick={onClose}><motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }} className="w-full max-w-md rounded-[28px] border border-black/10 bg-white p-6 shadow-[0_30px_80px_rgba(0,0,0,0.18)]" onClick={event => event.stopPropagation()}><div className="mb-6 flex items-start justify-between gap-4"><div><p className="text-[10px] uppercase tracking-[0.35em] text-black/45">Account</p><h3 className="mt-2 text-2xl font-bold tracking-tight">Profile settings</h3></div><button type="button" onClick={onClose} aria-label="Close profile settings" className="flex h-9 w-9 items-center justify-center border border-black/10 hover:bg-black hover:text-white"><X size={16} /></button></div><div className="space-y-4 border-y border-black/10 py-5"><div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/45">Name</p><p className="mt-1 text-sm">{user.name || "Not provided"}</p></div><div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/45">Email</p><p className="mt-1 break-all text-sm">{user.email}</p></div><div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/45">Signed in with</p><p className="mt-1 text-sm capitalize">{provider || "email"}</p></div></div>{isGoogleUser && <form onSubmit={handleSubmit} className="mt-6 space-y-4"><div><h4 className="text-xs font-bold uppercase tracking-[0.2em]">Create or change password</h4><p className="mt-2 text-sm leading-relaxed text-black/55">Use a password to sign in with email as well as Google.</p></div><label className="block"><span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-black/60">New password</span><input type="password" minLength={6} value={password} onChange={event => setPassword(event.target.value)} className="w-full border border-black/10 bg-[#faf9f7] px-4 py-3 text-sm outline-none focus:border-black" autoComplete="new-password" /></label><label className="block"><span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-black/60">Confirm password</span><input type="password" minLength={6} value={confirmation} onChange={event => setConfirmation(event.target.value)} className="w-full border border-black/10 bg-[#faf9f7] px-4 py-3 text-sm outline-none focus:border-black" autoComplete="new-password" /></label><button type="submit" disabled={submitting} className="w-full bg-black px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white hover:bg-neutral-800 disabled:cursor-wait disabled:opacity-60">{submitting ? "Saving" : "Save password"}</button></form>}{message && <p className="mt-4 text-sm text-green-700" aria-live="polite">{message}</p>}{error && <p className="mt-4 text-sm text-red-600" aria-live="polite">{error}</p>}</motion.div></motion.div></AnimatePresence>;
 }

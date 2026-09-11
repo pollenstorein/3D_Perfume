@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 
-import { AuthModal, type User } from "./auth";
+import { AuthModal, ProfileSettings, type User } from "./auth";
 import { Footer } from "./footer";
 import { CookiePolicySection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { SideMenu, TopBar } from "./navigation";
@@ -38,12 +38,15 @@ export default function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [user, setUser] = useState<User | null>(null);
+  const [authProvider, setAuthProvider] = useState("email");
+  const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
     const restoreSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user && mounted) {
+        setAuthProvider(session.user.app_metadata.provider ?? "email");
         const fallback = { id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" };
         const profile = await getProfile(session.user.id, fallback).catch(() => fallback);
         setUser({ ...profile, name: fallback.name });
@@ -52,6 +55,7 @@ export default function App() {
     restoreSession();
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!session?.user) { setUser(null); return; }
+      setAuthProvider(session.user.app_metadata.provider ?? "email");
       returnToHome();
       const fallback = { id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" };
       const profile = await getProfile(session.user.id, fallback).catch(() => fallback);
@@ -107,9 +111,13 @@ export default function App() {
     const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: "https://3-d-perfume.vercel.app/" } });
     if (error) throw new Error(error.message);
   };
+  const handlePasswordChange = async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw new Error(error.message);
+  };
   const handleBuyNow = () => user ? scrollToHash("#fragrances") : openAuth("login");
 
   const legalPage = cookiesOpen ? <CookiePolicySection onBack={() => setCookiesOpen(false)} /> : refundOpen ? <RefundPolicySection onBack={() => setRefundOpen(false)} /> : privacyOpen ? <PrivacyPolicySection onBack={() => setPrivacyOpen(false)} /> : termsOpen ? <TermsSection onBack={() => setTermsOpen(false)} /> : null;
 
-  return <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}><style>{GLOBAL_STYLES}</style><SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} /><TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open: boolean) => !open)} user={user} onBuyNow={handleBuyNow} /><AuthModal open={authOpen} mode={authMode} onClose={() => setAuthOpen(false)} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} /><main>{legalPage ?? <><Hero /><FragrancesSection /><BundleSection /><AboutSection /><TrackBanner userId={user?.id} onRequireLogin={() => openAuth("login")} /></>}</main>{!legalPage && <Footer onOpenPrivacy={() => setPrivacyOpen(true)} onOpenTerms={() => setTermsOpen(true)} onOpenRefund={() => setRefundOpen(true)} onOpenCookies={() => setCookiesOpen(true)} />}</div>;
+  return <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}><style>{GLOBAL_STYLES}</style><SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} user={user} onProfileSettings={() => setProfileSettingsOpen(true)} /><TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open: boolean) => !open)} user={user} onBuyNow={handleBuyNow} /><AuthModal open={authOpen} mode={authMode} onClose={() => setAuthOpen(false)} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} /><ProfileSettings open={profileSettingsOpen} user={user} provider={authProvider} onClose={() => setProfileSettingsOpen(false)} onPasswordChange={handlePasswordChange} /><main>{legalPage ?? <><Hero /><FragrancesSection /><BundleSection /><AboutSection /><TrackBanner userId={user?.id} onRequireLogin={() => openAuth("login")} /></>}</main>{!legalPage && <Footer onOpenPrivacy={() => setPrivacyOpen(true)} onOpenTerms={() => setTermsOpen(true)} onOpenRefund={() => setRefundOpen(true)} onOpenCookies={() => setCookiesOpen(true)} />}</div>;
 }
