@@ -15,7 +15,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vite/client"],
+    "types": ["vite/client", "node"],
     "paths": {
       "react": ["./node_modules/.pnpm/@types+react@18.3.12/node_modules/@types/react"],
       "react/*": ["./node_modules/.pnpm/@types+react@18.3.12/node_modules/@types/react/*"],

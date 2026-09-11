@@ -1,8 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
-const viteEnv: Record<string, string | undefined> = {};
-const supabaseUrl = viteEnv.VITE_SUPABASE_URL ?? "https://mwfcuajifedtzjtmvdbh.supabase.co";
-const supabaseAnonKey = viteEnv.VITE_SUPABASE_ANON_KEY ?? "sb_publishable_B22PSzXKU4uhmB8Vyb76NQ_8moZLUyR";
+const supabaseUrl = "https://mwfcuajifedtzjtmvdbh.supabase.co";
+const supabaseAnonKey = "sb_publishable_B22PSzXKU4uhmB8Vyb76NQ_8moZLUyR";
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 

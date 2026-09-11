@@ -24,6 +24,11 @@ function scrollToHash(hash: string) {
   window.history.pushState(null, "", hash);
 }
 
+function returnToHome() {
+  window.history.replaceState(null, "", "/");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
@@ -47,6 +52,7 @@ export default function App() {
     restoreSession();
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!session?.user) { setUser(null); return; }
+      returnToHome();
       const fallback = { id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" };
       const profile = await getProfile(session.user.id, fallback).catch(() => fallback);
       if (mounted) setUser({ ...profile, name: fallback.name });
@@ -95,9 +101,10 @@ export default function App() {
       if (data.user) await saveProfile({ id: data.user.id, email: cleanedEmail });
     }
     setAuthOpen(false);
+    returnToHome();
   };
   const handleGoogleSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } });
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: "https://3-d-perfume.vercel.app/" } });
     if (error) throw new Error(error.message);
   };
   const handleBuyNow = () => user ? scrollToHash("#fragrances") : openAuth("login");
