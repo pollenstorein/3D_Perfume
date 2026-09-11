@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 
-export type User = { name: string; email: string; password?: string };
+export type User = { id?: string; name: string; email: string; password?: string };
 
 type AuthModalProps = {
   open: boolean;

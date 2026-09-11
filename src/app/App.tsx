@@ -40,7 +40,8 @@ export default function App() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user && mounted) {
         const fallback = { id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" };
-        setUser(await getProfile(session.user.id, fallback).catch(() => fallback));
+        const profile = await getProfile(session.user.id, fallback).catch(() => fallback);
+        setUser({ ...profile, name: fallback.name });
       }
     };
     restoreSession();
@@ -48,7 +49,7 @@ export default function App() {
       if (!session?.user) { setUser(null); return; }
       const fallback = { id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" };
       const profile = await getProfile(session.user.id, fallback).catch(() => fallback);
-      if (mounted) setUser(profile);
+      if (mounted) setUser({ ...profile, name: fallback.name });
     });
     return () => { mounted = false; subscription.unsubscribe(); };
   }, []);
@@ -91,7 +92,7 @@ export default function App() {
       const { data, error } = await supabase.auth.signUp({ email: cleanedEmail, password, options: { data: { name: cleanedName } } });
       if (error) throw new Error(error.message);
       if (!data.session) throw new Error("Account created. Check your email to confirm your account before logging in.");
-      if (data.user) await saveProfile({ id: data.user.id, name: cleanedName, email: cleanedEmail });
+      if (data.user) await saveProfile({ id: data.user.id, email: cleanedEmail });
     }
     setAuthOpen(false);
   };
@@ -103,5 +104,5 @@ export default function App() {
 
   const legalPage = cookiesOpen ? <CookiePolicySection onBack={() => setCookiesOpen(false)} /> : refundOpen ? <RefundPolicySection onBack={() => setRefundOpen(false)} /> : privacyOpen ? <PrivacyPolicySection onBack={() => setPrivacyOpen(false)} /> : termsOpen ? <TermsSection onBack={() => setTermsOpen(false)} /> : null;
 
-  return <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}><style>{GLOBAL_STYLES}</style><SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} /><TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen(open => !open)} user={user} onBuyNow={handleBuyNow} /><AuthModal open={authOpen} mode={authMode} onClose={() => setAuthOpen(false)} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} /><main>{legalPage ?? <><Hero /><FragrancesSection /><BundleSection /><AboutSection /><TrackBanner /></>}</main>{!legalPage && <Footer onOpenPrivacy={() => setPrivacyOpen(true)} onOpenTerms={() => setTermsOpen(true)} onOpenRefund={() => setRefundOpen(true)} onOpenCookies={() => setCookiesOpen(true)} />}</div>;
+  return <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}><style>{GLOBAL_STYLES}</style><SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} /><TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open: boolean) => !open)} user={user} onBuyNow={handleBuyNow} /><AuthModal open={authOpen} mode={authMode} onClose={() => setAuthOpen(false)} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} /><main>{legalPage ?? <><Hero /><FragrancesSection /><BundleSection /><AboutSection /><TrackBanner userId={user?.id} onRequireLogin={() => openAuth("login")} /></>}</main>{!legalPage && <Footer onOpenPrivacy={() => setPrivacyOpen(true)} onOpenTerms={() => setTermsOpen(true)} onOpenRefund={() => setRefundOpen(true)} onOpenCookies={() => setCookiesOpen(true)} />}</div>;
 }
