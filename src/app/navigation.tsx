@@ -52,7 +52,7 @@ export function SideMenu({ open, onClose, onBuyNow, user, onProfileSettings, onS
     <AnimatePresence>
       {open && <>
         <motion.div key="backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0 z-40 bg-black/20" onClick={onClose} />
-        <motion.aside key="drawer" initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ duration: 0.45, ease: [0.32, 0, 0.08, 1] }} className="fixed top-0 left-0 h-full z-50 bg-white flex flex-col" style={{ width: "min(360px, 85vw)", borderRight: "1px solid #e0e0e0" }}>
+        <motion.aside key="drawer" initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ duration: 0.45, ease: [0.32, 0, 0.08, 1] }} className="fixed top-0 left-0 z-50 flex h-full w-full flex-col overflow-y-auto bg-white" style={{ width: "min(360px, 85vw)", borderRight: "1px solid #e0e0e0" }}>
           <div className="flex items-center justify-between px-8 pt-8 pb-6" style={{ borderBottom: "1px solid #e8e8e8" }}><span className="text-xs tracking-[0.3em] font-semibold text-black uppercase">Menu</span><button onClick={onClose} className="w-8 h-8 flex items-center justify-center hover:bg-black hover:text-white transition-colors duration-200"><X size={16} /></button></div>
           <nav className="flex-1 px-8 py-10 flex flex-col gap-1">
             {user && <button type="button" onClick={() => { onClose(); onProfileSettings(); }} className="group flex items-center justify-between border-b border-[#f0f0f0] py-4 text-left text-black hover:border-black"><span className="text-sm font-semibold uppercase tracking-[0.12em]">Profile settings</span><ArrowRight size={13} className="opacity-0 transition-opacity group-hover:opacity-100" /></button>}
@@ -62,7 +62,7 @@ export function SideMenu({ open, onClose, onBuyNow, user, onProfileSettings, onS
               <motion.a key={item.label} href={item.href} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.055, duration: 0.35 }} onClick={onClose} className="group flex items-center justify-between py-4 text-black border-b border-[#f0f0f0] hover:border-black transition-colors duration-200" style={{ textDecoration: "none" }}><span className="text-sm font-semibold tracking-[0.12em] uppercase group-hover:translate-x-1 transition-transform duration-200 inline-block">{item.label}</span><ArrowRight size={13} className="opacity-0 group-hover:opacity-100 transition-opacity duration-200" /></motion.a>
             ))}
           </nav>
-          <div className="space-y-5 px-8 pb-10"><p className="text-[10px] tracking-[0.35em] uppercase text-neutral-400">Know Pollen®</p>{user && <button type="button" onClick={() => { onClose(); onSignOut(); }} className="w-full border-t border-[#e8e8e8] pt-5 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-black/60 hover:text-black">Log out</button>}</div>
+          <div className="space-y-5 px-8 pb-[calc(2.5rem+env(safe-area-inset-bottom))]"><p className="text-[10px] tracking-[0.35em] uppercase text-neutral-400">Know Pollen®</p>{user && <button type="button" onClick={() => { onClose(); onSignOut(); }} className="w-full border-t border-[#e8e8e8] pt-5 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-black/60 hover:text-black">Log out</button>}</div>
         </motion.aside>
       </>}
     </AnimatePresence>
