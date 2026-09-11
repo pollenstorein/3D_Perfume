@@ -35,7 +35,6 @@ export function TopBar({ menuOpen, onMenuToggle, user, onBuyNow }: { menuOpen: b
       <div className="mx-auto flex h-full w-full max-w-screen-xl items-center justify-between">
         <div className="flex items-center gap-3 sm:gap-4"><HamburgerButton onClick={onMenuToggle} open={menuOpen} /><span className="text-[10px] sm:text-xs md:text-sm font-bold tracking-[0.22em] sm:tracking-[0.28em] uppercase text-black select-none whitespace-nowrap">Know Pollen</span></div>
         <div className="flex items-center gap-3">
-          {user && <span className="hidden text-[10px] font-semibold tracking-[0.18em] uppercase text-black md:inline-block">{user.name.split(" ")[0]}</span>}
           <button onClick={onBuyNow} className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase bg-black text-white px-3 sm:px-4 md:px-6 py-2.5 hover:bg-neutral-800 transition-colors duration-200" style={{ textDecoration: "none", border: "none", cursor: "pointer" }}>Buy Now</button>
         </div>
       </div>
@@ -43,7 +42,7 @@ export function TopBar({ menuOpen, onMenuToggle, user, onBuyNow }: { menuOpen: b
   );
 }
 
-export function SideMenu({ open, onClose, onBuyNow, user, onProfileSettings }: { open: boolean; onClose: () => void; onBuyNow: () => void; user: { name: string; email: string } | null; onProfileSettings: () => void }) {
+export function SideMenu({ open, onClose, onBuyNow, user, onProfileSettings, onSignOut }: { open: boolean; onClose: () => void; onBuyNow: () => void; user: { name: string; email: string } | null; onProfileSettings: () => void; onSignOut: () => void }) {
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -63,7 +62,7 @@ export function SideMenu({ open, onClose, onBuyNow, user, onProfileSettings }: {
               <motion.a key={item.label} href={item.href} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.055, duration: 0.35 }} onClick={onClose} className="group flex items-center justify-between py-4 text-black border-b border-[#f0f0f0] hover:border-black transition-colors duration-200" style={{ textDecoration: "none" }}><span className="text-sm font-semibold tracking-[0.12em] uppercase group-hover:translate-x-1 transition-transform duration-200 inline-block">{item.label}</span><ArrowRight size={13} className="opacity-0 group-hover:opacity-100 transition-opacity duration-200" /></motion.a>
             ))}
           </nav>
-          <div className="px-8 pb-10"><p className="text-[10px] tracking-[0.35em] uppercase text-neutral-400">Know Pollen®</p></div>
+          <div className="space-y-5 px-8 pb-10"><p className="text-[10px] tracking-[0.35em] uppercase text-neutral-400">Know Pollen®</p>{user && <button type="button" onClick={() => { onClose(); onSignOut(); }} className="w-full border-t border-[#e8e8e8] pt-5 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-black/60 hover:text-black">Log out</button>}</div>
         </motion.aside>
       </>}
     </AnimatePresence>
