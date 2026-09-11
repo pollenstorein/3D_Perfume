@@ -6,7 +6,7 @@ import { Footer } from "./footer";
 import { CookiePolicySection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
 import { AboutSection, BundleSection, FragrancesSection, Hero, TrackBanner } from "./sections";
-import { getProfile, saveProfile, supabase } from "./supabase";
+import { createOrder, getProfile, saveProfile, supabase } from "./supabase";
 
 const GLOBAL_STYLES = `
   html { scroll-behavior: smooth; overflow-x: hidden; }
@@ -45,7 +45,8 @@ export default function App() {
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     try {
       const savedCart = localStorage.getItem("know-pollen-cart");
-      return savedCart ? JSON.parse(savedCart) as CartItem[] : [];
+      const parsedCart = savedCart ? JSON.parse(savedCart) as CartItem[] : [];
+      return parsedCart.map(item => ({ ...item, price: item.price ?? FRAGRANCES.find(fragrance => fragrance.id === item.id)?.price ?? 0 }));
     } catch {
       return [];
     }
@@ -62,6 +63,7 @@ export default function App() {
       if (session?.user && mounted) {
         setAuthProvider(session.user.app_metadata.provider ?? "email");
         const fallback = { id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" };
+        await saveProfile({ id: fallback.id, email: fallback.email });
         const profile = await getProfile(session.user.id, fallback).catch(() => fallback);
         setUser({ ...profile, name: fallback.name });
       }
@@ -72,6 +74,7 @@ export default function App() {
       setAuthProvider(session.user.app_metadata.provider ?? "email");
       returnToHome();
       const fallback = { id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" };
+      await saveProfile({ id: fallback.id, email: fallback.email });
       const profile = await getProfile(session.user.id, fallback).catch(() => fallback);
       if (mounted) setUser({ ...profile, name: fallback.name });
     });
@@ -137,11 +140,11 @@ export default function App() {
   };
   const handleBuyNow = () => user ? scrollToHash("#fragrances") : openAuth("login");
   const handleOpenCart = () => user ? setCartOpen(true) : openAuth("login");
-  const handleAddToCart = (fragrance: { id: number; name: string; img: string }) => {
+  const handleAddToCart = (fragrance: { id: number; name: string; img: string; price: number }) => {
     setCartItems(items => {
       const existing = items.find(item => item.id === fragrance.id);
       if (existing) return items.map(item => item.id === fragrance.id ? { ...item, quantity: item.quantity + 1 } : item);
-      return [...items, { id: fragrance.id, name: fragrance.name, img: fragrance.img, quantity: 1 }];
+      return [...items, { id: fragrance.id, name: fragrance.name, img: fragrance.img, price: fragrance.price, quantity: 1 }];
     });
     handleOpenCart();
   };
@@ -150,16 +153,28 @@ export default function App() {
     setCartItems(items => FRAGRANCES.reduce((nextItems, fragrance) => {
       const existing = nextItems.find(item => item.id === fragrance.id);
       if (existing) return nextItems.map(item => item.id === fragrance.id ? { ...item, quantity: item.quantity + 1 } : item);
-      return [...nextItems, { id: fragrance.id, name: fragrance.name, img: fragrance.img, quantity: 1 }];
+      return [...nextItems, { id: fragrance.id, name: fragrance.name, img: fragrance.img, price: fragrance.price, quantity: 1 }];
     }, items));
     handleOpenCart();
   };
   const handleCartQuantity = (id: number, change: number) => setCartItems(items => items.flatMap(item => item.id === id ? [{ ...item, quantity: item.quantity + change }].filter(updated => updated.quantity > 0) : [item]));
   const handleRemoveFromCart = (id: number) => setCartItems(items => items.filter(item => item.id !== id));
   const handleEmptyCart = () => setCartItems([]);
+  const handleCheckout = async () => {
+    if (!user || cartItems.length === 0) return openAuth("login");
+    const totalAmount = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    try {
+      const order = await createOrder(user.id ?? "", totalAmount);
+      setCartItems([]);
+      setCartOpen(false);
+      window.alert(`Order created. Tracking ID: ${order.tracking_id}`);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Unable to create your order.");
+    }
+  };
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   const legalPage = cookiesOpen ? <CookiePolicySection onBack={() => setCookiesOpen(false)} /> : refundOpen ? <RefundPolicySection onBack={() => setRefundOpen(false)} /> : privacyOpen ? <PrivacyPolicySection onBack={() => setPrivacyOpen(false)} /> : termsOpen ? <TermsSection onBack={() => setTermsOpen(false)} /> : null;
 
-  return <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}><style>{GLOBAL_STYLES}</style><SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} user={user} onProfileSettings={() => setProfileSettingsOpen(true)} onSignOut={handleSignOut} /><TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open: boolean) => !open)} user={user} onBuyNow={handleBuyNow} cartCount={cartCount} onCartOpen={handleOpenCart} /><CartDrawer open={cartOpen} items={cartItems} onClose={() => setCartOpen(false)} onChangeQuantity={handleCartQuantity} onRemove={handleRemoveFromCart} onEmpty={handleEmptyCart} /><AuthModal open={authOpen} mode={authMode} onClose={() => setAuthOpen(false)} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} /><ProfileSettings open={profileSettingsOpen} user={user} provider={authProvider} onClose={() => setProfileSettingsOpen(false)} onPasswordChange={handlePasswordChange} /><main>{legalPage ?? <><Hero /><FragrancesSection onAddToCart={handleAddToCart} /><BundleSection onAddBundle={handleAddBundle} /><AboutSection /><TrackBanner userId={user?.id} onRequireLogin={() => openAuth("login")} /></>}</main>{!legalPage && <Footer onOpenPrivacy={() => setPrivacyOpen(true)} onOpenTerms={() => setTermsOpen(true)} onOpenRefund={() => setRefundOpen(true)} onOpenCookies={() => setCookiesOpen(true)} />}</div>;
+  return <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}><style>{GLOBAL_STYLES}</style><SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} user={user} onProfileSettings={() => setProfileSettingsOpen(true)} onSignOut={handleSignOut} /><TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open: boolean) => !open)} user={user} onBuyNow={handleBuyNow} cartCount={cartCount} onCartOpen={handleOpenCart} /><CartDrawer open={cartOpen} items={cartItems} onClose={() => setCartOpen(false)} onChangeQuantity={handleCartQuantity} onRemove={handleRemoveFromCart} onEmpty={handleEmptyCart} onCheckout={handleCheckout} /><AuthModal open={authOpen} mode={authMode} onClose={() => setAuthOpen(false)} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} /><ProfileSettings open={profileSettingsOpen} user={user} provider={authProvider} onClose={() => setProfileSettingsOpen(false)} onPasswordChange={handlePasswordChange} /><main>{legalPage ?? <><Hero /><FragrancesSection onAddToCart={handleAddToCart} /><BundleSection onAddBundle={handleAddBundle} /><AboutSection /><TrackBanner userId={user?.id} onRequireLogin={() => openAuth("login")} /></>}</main>{!legalPage && <Footer onOpenPrivacy={() => setPrivacyOpen(true)} onOpenTerms={() => setTermsOpen(true)} onOpenRefund={() => setRefundOpen(true)} onOpenCookies={() => setCookiesOpen(true)} />}</div>;
 }
