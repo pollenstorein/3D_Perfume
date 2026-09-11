@@ -6,7 +6,7 @@ import { Footer } from "./footer";
 import { CookiePolicySection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
 import { AboutSection, BundleSection, FragrancesSection, Hero, TrackBanner } from "./sections";
-import { createOrder, supabase, syncProfile } from "./supabase";
+import { createOrder, supabase } from "./supabase";
 
 const GLOBAL_STYLES = `
   html { scroll-behavior: smooth; overflow-x: hidden; }
@@ -62,9 +62,7 @@ export default function App() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user && mounted) {
         setAuthProvider(session.user.app_metadata.provider ?? "email");
-        const fallback = { id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" };
-        const profile = await syncProfile(fallback.id, fallback.email).catch(() => ({ id: fallback.id, email: fallback.email }));
-        setUser({ ...profile, name: fallback.name });
+        setUser({ id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" });
       }
     };
     restoreSession();
@@ -72,9 +70,7 @@ export default function App() {
       if (!session?.user) { setUser(null); return; }
       setAuthProvider(session.user.app_metadata.provider ?? "email");
       returnToHome();
-      const fallback = { id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" };
-      const profile = await syncProfile(fallback.id, fallback.email).catch(() => ({ id: fallback.id, email: fallback.email }));
-      if (mounted) setUser({ ...profile, name: fallback.name });
+      if (mounted) setUser({ id: session.user.id, name: session.user.user_metadata.name ?? session.user.email ?? "", email: session.user.email ?? "" });
     });
     return () => { mounted = false; subscription.unsubscribe(); };
   }, []);

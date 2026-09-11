@@ -5,28 +5,6 @@ const supabaseAnonKey = "sb_publishable_B22PSzXKU4uhmB8Vyb76NQ_8moZLUyR";
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export type Profile = {
-  id: string;
-  email: string;
-};
-
-export async function getProfile(userId: string, fallback: Profile): Promise<Profile> {
-  const { data, error } = await supabase.from("profiles").select("id, email").eq("id", userId).maybeSingle();
-  if (error) throw error;
-  return data ?? fallback;
-}
-
-export async function saveProfile(profile: Profile) {
-  const { error } = await supabase.from("profiles").upsert(profile, { onConflict: "id" });
-  if (error) throw error;
-}
-
-export async function syncProfile(userId: string, email: string): Promise<Profile> {
-  const profile = { id: userId, email };
-  await saveProfile(profile);
-  return getProfile(userId, profile);
-}
-
 export type Order = {
   id: string;
   tracking_id: string;
