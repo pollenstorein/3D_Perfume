@@ -1,8 +1,10 @@
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 
 import { NAV_ITEMS } from "./data";
+
+export type CartItem = { id: number; name: string; img: string; quantity: number };
 
 export function HamburgerButton({ onClick, open }: { onClick: () => void; open: boolean }) {
   return (
@@ -14,7 +16,7 @@ export function HamburgerButton({ onClick, open }: { onClick: () => void; open: 
   );
 }
 
-export function TopBar({ menuOpen, onMenuToggle, user, onBuyNow }: { menuOpen: boolean; onMenuToggle: () => void; user: { name: string; email: string } | null; onBuyNow: () => void }) {
+export function TopBar({ menuOpen, onMenuToggle, user, onBuyNow, cartCount, onCartOpen }: { menuOpen: boolean; onMenuToggle: () => void; user: { name: string; email: string } | null; onBuyNow: () => void; cartCount: number; onCartOpen: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
 
@@ -34,12 +36,17 @@ export function TopBar({ menuOpen, onMenuToggle, user, onBuyNow }: { menuOpen: b
     <header className={`absolute top-0 left-0 right-0 z-30 px-4 sm:px-6 md:px-10 transition-all duration-300 ${hidden ? "-translate-y-full" : "translate-y-0"}`} style={{ height: scrolled ? "56px" : "72px", background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.0)", backdropFilter: scrolled ? "blur(12px)" : "none", borderBottom: scrolled ? "1px solid #e8e8e8" : "none" }}>
       <div className="mx-auto flex h-full w-full max-w-screen-xl items-center justify-between">
         <div className="flex items-center gap-3 sm:gap-4"><HamburgerButton onClick={onMenuToggle} open={menuOpen} /><span className="text-[10px] sm:text-xs md:text-sm font-bold tracking-[0.22em] sm:tracking-[0.28em] uppercase text-black select-none whitespace-nowrap">Know Pollen</span></div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button type="button" onClick={onCartOpen} aria-label={`Open cart${cartCount ? `, ${cartCount} items` : ""}`} className="relative flex h-10 w-10 items-center justify-center border border-black/20 bg-white hover:bg-black hover:text-white"><ShoppingBag size={16} />{cartCount > 0 && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center bg-black px-1 text-[9px] font-bold text-white">{cartCount}</span>}</button>
           <button onClick={onBuyNow} className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase bg-black text-white px-3 sm:px-4 md:px-6 py-2.5 hover:bg-neutral-800 transition-colors duration-200" style={{ textDecoration: "none", border: "none", cursor: "pointer" }}>Buy Now</button>
         </div>
       </div>
     </header>
   );
+}
+
+export function CartDrawer({ open, items, onClose, onChangeQuantity, onRemove }: { open: boolean; items: CartItem[]; onClose: () => void; onChangeQuantity: (id: number, change: number) => void; onRemove: (id: number) => void }) {
+  return <AnimatePresence>{open && <><motion.div key="cart-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[70] bg-black/20" onClick={onClose} /><motion.aside key="cart-drawer" initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: 0.35 }} className="fixed right-0 top-0 z-[80] flex h-full w-full max-w-md flex-col bg-white shadow-2xl"><div className="flex items-center justify-between border-b border-black/10 px-6 py-6"><div><p className="text-[10px] uppercase tracking-[0.3em] text-black/45">Your selection</p><h2 className="mt-2 text-xl font-bold">Cart</h2></div><button type="button" onClick={onClose} aria-label="Close cart" className="flex h-9 w-9 items-center justify-center border border-black/10 hover:bg-black hover:text-white"><X size={16} /></button></div><div className="flex-1 overflow-y-auto px-6 py-6">{items.length === 0 ? <p className="py-12 text-center text-sm text-black/50">Your cart is empty.</p> : <div className="space-y-5">{items.map(item => <div key={item.id} className="flex gap-4 border-b border-black/10 pb-5"><img src={item.img} alt={item.name} className="h-24 w-16 object-cover" /><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><p className="text-sm font-bold">{item.name}</p><button type="button" onClick={() => onRemove(item.id)} aria-label={`Remove ${item.name}`} className="text-black/45 hover:text-black"><Trash2 size={15} /></button></div><div className="mt-5 flex items-center gap-2"><button type="button" onClick={() => onChangeQuantity(item.id, -1)} aria-label={`Decrease ${item.name} quantity`} className="flex h-7 w-7 items-center justify-center border border-black/15"><Minus size={12} /></button><span className="w-6 text-center text-sm">{item.quantity}</span><button type="button" onClick={() => onChangeQuantity(item.id, 1)} aria-label={`Increase ${item.name} quantity`} className="flex h-7 w-7 items-center justify-center border border-black/15"><Plus size={12} /></button></div></div></div>)}</div>}</div>{items.length > 0 && <div className="border-t border-black/10 px-6 py-6"><button type="button" className="w-full bg-black px-5 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-white hover:bg-neutral-800">Proceed to checkout</button></div>}</motion.aside></>}</AnimatePresence>;
 }
 
 export function SideMenu({ open, onClose, onBuyNow, user, onProfileSettings, onSignOut }: { open: boolean; onClose: () => void; onBuyNow: () => void; user: { name: string; email: string } | null; onProfileSettings: () => void; onSignOut: () => void }) {
