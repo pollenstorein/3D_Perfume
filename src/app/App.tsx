@@ -42,7 +42,18 @@ export default function App() {
   const [authProvider, setAuthProvider] = useState("email");
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    try {
+      const savedCart = localStorage.getItem("know-pollen-cart");
+      return savedCart ? JSON.parse(savedCart) as CartItem[] : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("know-pollen-cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   useEffect(() => {
     let mounted = true;
