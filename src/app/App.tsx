@@ -5,7 +5,7 @@ import { FRAGRANCES } from "./data";
 import { Footer } from "./footer";
 import { CookiePolicySection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
-import { AboutSection, BundleSection, FragrancesSection, Hero, TrackBanner } from "./sections";
+import { AboutSection, BundleSection, CheckoutSection, FragrancesSection, Hero, TrackBanner } from "./sections";
 import { createOrder, supabase } from "./supabase";
 
 const GLOBAL_STYLES = `
@@ -41,6 +41,8 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authProvider, setAuthProvider] = useState("email");
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(() => window.location.pathname === "/checkout");
+  const [checkoutAfterLogin, setCheckoutAfterLogin] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     try {
@@ -115,7 +117,12 @@ export default function App() {
       if (!data.session) throw new Error("Account created. Check your email to confirm your account before logging in.");
     }
     setAuthOpen(false);
-    returnToHome();
+    if (checkoutAfterLogin) {
+      setCheckoutAfterLogin(false);
+      setCartOpen(false);
+      setCheckoutOpen(true);
+      window.history.pushState(null, "", "/checkout");
+    } else returnToHome();
   };
   const handleGoogleSignIn = async () => {
     const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: "https://3-d-perfume.vercel.app/" } });
@@ -132,7 +139,7 @@ export default function App() {
     setAuthProvider("email");
   };
   const handleBuyNow = () => scrollToHash("#fragrances");
-  const handleOpenCart = () => user ? setCartOpen(true) : openAuth("login");
+  const handleOpenCart = () => setCartOpen(true);
   const handleAddToCart = (fragrance: { id: number; name: string; img: string; price: number }) => {
     setCartItems(items => {
       const existing = items.find(item => item.id === fragrance.id);
@@ -153,8 +160,18 @@ export default function App() {
   const handleCartQuantity = (id: number, change: number) => setCartItems(items => items.flatMap(item => item.id === id ? [{ ...item, quantity: item.quantity + change }].filter(updated => updated.quantity > 0) : [item]));
   const handleRemoveFromCart = (id: number) => setCartItems(items => items.filter(item => item.id !== id));
   const handleEmptyCart = () => setCartItems([]);
-  const handleCheckout = async () => {
-    if (!user || cartItems.length === 0) return openAuth("login");
+  const handleCheckout = () => {
+    if (cartItems.length === 0) return;
+    if (!user) {
+      setCheckoutAfterLogin(true);
+      return openAuth("login");
+    }
+    setCartOpen(false);
+    setCheckoutOpen(true);
+    window.history.pushState(null, "", "/checkout");
+  };
+  const handlePlaceOrder = async () => {
+    if (!user || cartItems.length === 0) return;
     const totalAmount = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     try {
       const order = await createOrder(user.id ?? "", totalAmount);
@@ -169,5 +186,5 @@ export default function App() {
 
   const legalPage = cookiesOpen ? <CookiePolicySection onBack={() => setCookiesOpen(false)} /> : refundOpen ? <RefundPolicySection onBack={() => setRefundOpen(false)} /> : privacyOpen ? <PrivacyPolicySection onBack={() => setPrivacyOpen(false)} /> : termsOpen ? <TermsSection onBack={() => setTermsOpen(false)} /> : null;
 
-  return <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}><style>{GLOBAL_STYLES}</style><SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} user={user} onLogin={() => openAuth("login")} onProfileSettings={() => setProfileSettingsOpen(true)} onSignOut={handleSignOut} /><TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open: boolean) => !open)} user={user} onBuyNow={handleBuyNow} cartCount={cartCount} onCartOpen={handleOpenCart} /><CartDrawer open={cartOpen} items={cartItems} onClose={() => setCartOpen(false)} onChangeQuantity={handleCartQuantity} onRemove={handleRemoveFromCart} onEmpty={handleEmptyCart} onCheckout={handleCheckout} /><AuthModal open={authOpen} mode={authMode} onClose={() => setAuthOpen(false)} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} /><ProfileSettings open={profileSettingsOpen} user={user} provider={authProvider} onClose={() => setProfileSettingsOpen(false)} onPasswordChange={handlePasswordChange} /><main>{legalPage ?? <><Hero /><FragrancesSection onAddToCart={handleAddToCart} /><BundleSection onAddBundle={handleAddBundle} /><AboutSection /><TrackBanner userId={user?.id} onRequireLogin={() => openAuth("login")} /></>}</main>{!legalPage && <Footer onOpenPrivacy={() => setPrivacyOpen(true)} onOpenTerms={() => setTermsOpen(true)} onOpenRefund={() => setRefundOpen(true)} onOpenCookies={() => setCookiesOpen(true)} />}</div>;
+  return <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}><style>{GLOBAL_STYLES}</style><SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} user={user} onLogin={() => openAuth("login")} onProfileSettings={() => setProfileSettingsOpen(true)} onSignOut={handleSignOut} /><TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open: boolean) => !open)} user={user} onBuyNow={handleBuyNow} cartCount={cartCount} onCartOpen={handleOpenCart} /><CartDrawer open={cartOpen} items={cartItems} onClose={() => setCartOpen(false)} onChangeQuantity={handleCartQuantity} onRemove={handleRemoveFromCart} onEmpty={handleEmptyCart} onCheckout={handleCheckout} /><AuthModal open={authOpen} mode={authMode} onClose={() => { setCheckoutAfterLogin(false); setAuthOpen(false); }} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} /><ProfileSettings open={profileSettingsOpen} user={user} provider={authProvider} onClose={() => setProfileSettingsOpen(false)} onPasswordChange={handlePasswordChange} /><main>{legalPage ? legalPage : checkoutOpen ? <CheckoutSection items={cartItems} onBack={() => { setCheckoutOpen(false); window.history.pushState(null, "", "/"); }} onPlaceOrder={handlePlaceOrder} /> : <><Hero /><FragrancesSection onAddToCart={handleAddToCart} /><BundleSection onAddBundle={handleAddBundle} /><AboutSection /><TrackBanner userId={user?.id} onRequireLogin={() => openAuth("login")} /></>}</main>{!legalPage && !checkoutOpen && <Footer onOpenPrivacy={() => setPrivacyOpen(true)} onOpenTerms={() => setTermsOpen(true)} onOpenRefund={() => setRefundOpen(true)} onOpenCookies={() => setCookiesOpen(true)} />}</div>;
 }
