@@ -1,6 +1,6 @@
-import pollen1 from "./Images/pollen1.jpeg";
-import pollen2 from "./Images/pollen2.jpeg";
-import pollen3 from "./Images/pollen3.jpeg";
+import pollen1 from "./Images/1a.png";
+import pollen2 from "./Images/2a.png";
+import pollen3 from "./Images/3a.png";
 
 export const NAV_ITEMS = [
   { label: "SHOP", href: "#" },
