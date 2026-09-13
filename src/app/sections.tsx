@@ -2,11 +2,11 @@ import { ArrowLeft, ArrowRight, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FRAGRANCES } from "./data";
 import carouselOne from "./Images/1a bg.png";
-import storyOne from "./Images/1a.PNG";
+import storyOne from "./Images/1c.jpg";
 import carouselTwo from "./Images/2a bg.png";
-import storyTwo from "./Images/2a.PNG";
+import storyTwo from "./Images/2e.jpg";
 import carouselThree from "./Images/3a bg.png";
-import storyThree from "./Images/3c.PNG";
+import storyThree from "./Images/3e.jpg";
 import introVideo from "./Images/intro.mp4";
 import { getOrderByTrackingId } from "./supabase";
 
