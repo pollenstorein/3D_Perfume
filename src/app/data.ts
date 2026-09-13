@@ -4,7 +4,6 @@ import pollen3 from "./Images/3e.jpg";
 
 export const NAV_ITEMS = [
   { label: "SHOP", href: "#" },
-//  { label: "FRAGRANCES", href: "#fragrances" },
   { label: "GET YOUR BUNDLE", href: "#bundle" },
   { label: "KNOW POLLEN", href: "#about" },
   { label: "TRACK ORDER", href: "#track" },
