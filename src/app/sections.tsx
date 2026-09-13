@@ -1,12 +1,11 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { FRAGRANCES } from "./data";
-import pollen4 from "./Images/pollen4.jpeg";
+import introVideo from "./Images/intro.mp4";
 import { getOrderByTrackingId } from "./supabase";
 
 export function Hero() {
-  return <section className="relative flex min-h-screen flex-col overflow-hidden bg-white"><div className="absolute right-0 top-0 h-full w-full bg-[#f0ece8] md:w-[58%]"><img src={pollen4} alt="Know Pollen signature fragrance" className="h-full w-full object-cover" style={{ mixBlendMode: "multiply", opacity: 0.92 }} /></div><div className="relative z-10 mx-auto flex w-full max-w-screen-xl flex-1 flex-col justify-end px-6 pb-20 md:px-16 md:pb-28"><motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.2 }} className="max-w-lg"><p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.45em] text-black/50">✦ New Collection — 2026</p><h1 className="mb-8 text-[clamp(3.2rem,9vw,7.5rem)] font-extrabold leading-[0.92] tracking-tight text-black">Find<br /><em className="font-light italic text-black/60">the one.</em></h1><p className="mb-10 max-w-xs text-sm leading-relaxed text-black/55 md:text-base">Discover fragrances that speak before you do. Crafted for those who leave a mark.</p><div className="flex flex-wrap items-center gap-4"><a href="#fragrances" className="inline-flex items-center gap-3 bg-black px-8 py-4 text-xs font-bold uppercase tracking-[0.18em] text-white">Discover <ArrowRight size={14} /></a><a href="#about" className="text-xs font-semibold uppercase tracking-[0.18em] text-black underline underline-offset-4">Know Pollen</a></div></motion.div></div><div className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 md:block"><div className="h-10 w-px bg-black/20" /></div></section>;
+  return <section className="relative min-h-screen overflow-hidden bg-black"><video src={introVideo} autoPlay muted loop playsInline aria-label="Know Pollen fragrance introduction" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-black/10" /></section>;
 }
 
 export function FragrancesSection({ onAddToCart }: { onAddToCart: (fragrance: typeof FRAGRANCES[number]) => void }) {
