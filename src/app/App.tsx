@@ -6,12 +6,15 @@ import { Footer } from "./footer";
 import giftGalleryOne from "./Images/4a.PNG";
 import { CookiePolicySection, OrdersShippingSection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
-import { BottleCarousel, CheckoutSection, GiftSetGallerySection, Hero, IntroStories, MomentSection, PricingSection, TrackBanner } from "./sections";
+import { BottleCarousel, CheckoutSection, GiftSetPage, Hero, IntroStories, MomentSection, PricingSection, TrackBanner } from "./sections";
 import { createOrder, supabase } from "./supabase";
+
+const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
 
 const GLOBAL_STYLES = `
   html { scroll-behavior: smooth; overflow-x: hidden; }
   body { overflow-x: hidden; }
+  [class*="mt-12"][class*="border-t"][class*="border-black/10"][class*="pt-5"] { display: none !important; }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: #fff; }
   ::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 2px; }
@@ -64,6 +67,20 @@ export default function App() {
   const [cartOpen, setCartOpen] = useState(false);
   const shopScrollY = useRef(0);
   const pendingScrollRestore = useRef<number | null>(null);
+
+  useEffect(() => {
+    const handlePolicyNavigation = (event: Event) => {
+      const policy = (event as CustomEvent<string>).detail;
+      if (policy === "privacy") setPrivacyOpen(true);
+      if (policy === "terms") setTermsOpen(true);
+      if (policy === "orders") setOrdersShippingOpen(true);
+      if (policy === "refund") setRefundOpen(true);
+      if (policy === "cookies") setCookiesOpen(true);
+    };
+    window.addEventListener("open-policy", handlePolicyNavigation);
+    return () => window.removeEventListener("open-policy", handlePolicyNavigation);
+  }, []);
+
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     try {
       const savedCart = localStorage.getItem("know-pollen-cart");
@@ -180,10 +197,11 @@ export default function App() {
   const handleBackFromGiftSet = () => { setGiftSetOpen(false); window.history.pushState(null, "", "/"); window.scrollTo(0, 0); };
   const handleOpenCart = () => setCartOpen(true);
   const handleAddToCart = (fragrance: { id: number; name: string; img: string; price: number }) => {
+    const price = fragrance.id === 4 ? 1500 : fragrance.price;
     setCartItems(items => {
       const existing = items.find(item => item.id === fragrance.id);
-      if (existing) return items.map(item => item.id === fragrance.id ? { ...item, quantity: item.quantity + 1 } : item);
-      return [...items, { id: fragrance.id, name: fragrance.name, img: fragrance.img, price: fragrance.price, quantity: 1 }];
+      if (existing) return items.map(item => item.id === fragrance.id ? { ...item, price, quantity: item.quantity + 1 } : item);
+      return [...items, { id: fragrance.id, name: fragrance.name, img: fragrance.img, price, quantity: 1 }];
     });
   };
   const handleCartQuantity = (id: number, change: number) => setCartItems(items => items.flatMap(item => item.id === id ? [{ ...item, quantity: item.quantity + change }].filter(updated => updated.quantity > 0) : [item]));
