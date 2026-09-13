@@ -5,7 +5,24 @@ import introVideo from "./Images/intro.mp4";
 import { getOrderByTrackingId } from "./supabase";
 
 export function Hero() {
-  return <section className="relative min-h-[calc(100svh-72px)] overflow-hidden bg-black"><video src={introVideo} autoPlay muted loop playsInline aria-label="Know Pollen fragrance introduction" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-black/10" /></section>;
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.defaultPlaybackRate = 0.5;
+      videoRef.current.playbackRate = 0.5;
+      videoRef.current.muted = false;
+      videoRef.current.volume = 1;
+    }
+  }, []);
+  const setVideoPlayback = () => {
+    if (videoRef.current) {
+      videoRef.current.defaultPlaybackRate = 0.5;
+      videoRef.current.playbackRate = 0.5;
+      videoRef.current.muted = false;
+      videoRef.current.volume = 1;
+    }
+  };
+  return <section className="relative overflow-hidden bg-black"><video ref={videoRef} src={introVideo} loop playsInline controls onLoadedMetadata={setVideoPlayback} aria-label="Know Pollen fragrance introduction" className="relative block h-auto w-full" /><div className="pointer-events-none absolute inset-0 bg-black/10" /></section>;
 }
 
 export function FragrancesSection({ onAddToCart }: { onAddToCart: (fragrance: typeof FRAGRANCES[number]) => void }) {
