@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Maximize, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FRAGRANCES } from "./data";
 import introVideo from "./Images/intro.mp4";
@@ -6,12 +6,28 @@ import { getOrderByTrackingId } from "./supabase";
 
 export function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.defaultPlaybackRate = 0.75;
       videoRef.current.playbackRate = 0.75;
       videoRef.current.muted = true;
     }
+  }, []);
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const updateProgress = () => setProgress(video.currentTime);
+    const updateDuration = () => setDuration(video.duration);
+    video.addEventListener("timeupdate", updateProgress);
+    video.addEventListener("loadedmetadata", updateDuration);
+    return () => {
+      video.removeEventListener("timeupdate", updateProgress);
+      video.removeEventListener("loadedmetadata", updateDuration);
+    };
   }, []);
   const setVideoPlayback = () => {
     if (videoRef.current) {
@@ -20,7 +36,32 @@ export function Hero() {
       videoRef.current.muted = true;
     }
   };
-  return <section className="relative overflow-hidden bg-black"><video ref={videoRef} src={introVideo} autoPlay muted loop playsInline controls onLoadedMetadata={setVideoPlayback} aria-label="Know Pollen fragrance introduction" className="relative block h-auto w-full" /><div className="pointer-events-none absolute inset-0 bg-black/10" /></section>;
+  const togglePlayback = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      void video.play();
+      setIsPlaying(true);
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  };
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
+  };
+  const seekVideo = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nextTime = Number(event.target.value);
+    if (videoRef.current) videoRef.current.currentTime = nextTime;
+    setProgress(nextTime);
+  };
+  const toggleFullscreen = () => {
+    if (videoRef.current?.requestFullscreen) void videoRef.current.requestFullscreen();
+  };
+  return <section className="relative overflow-hidden bg-black"><video ref={videoRef} src={introVideo} autoPlay muted loop playsInline onLoadedMetadata={event => { setVideoPlayback(); setDuration(event.currentTarget.duration); }} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} aria-label="Know Pollen fragrance introduction" className="relative block h-auto w-full" /><div className="pointer-events-none absolute inset-0 bg-black/10" /><div className="absolute bottom-0 left-0 right-0 z-10 bg-black/80 px-4 py-3 text-white backdrop-blur-sm md:px-8"><div className="mx-auto flex max-w-screen-xl items-center gap-3"><button type="button" onClick={togglePlayback} aria-label={isPlaying ? "Pause video" : "Play video"} className="flex h-9 w-9 shrink-0 items-center justify-center border border-white/30 hover:bg-white hover:text-black">{isPlaying ? <Pause size={15} /> : <Play size={15} />}</button><input type="range" min="0" max={duration || 0} step="0.1" value={Math.min(progress, duration || 0)} onChange={seekVideo} aria-label="Video progress" className="h-1 min-w-0 flex-1 accent-white" /><button type="button" onClick={toggleMute} aria-label={isMuted ? "Unmute video" : "Mute video"} className="flex h-9 w-9 shrink-0 items-center justify-center border border-white/30 hover:bg-white hover:text-black">{isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}</button><span className="hidden text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60 sm:inline">0.75x</span><button type="button" onClick={toggleFullscreen} aria-label="Fullscreen video" className="flex h-9 w-9 shrink-0 items-center justify-center border border-white/30 hover:bg-white hover:text-black"><Maximize size={15} /></button></div></div></section>;
 }
 
 export function FragrancesSection({ onAddToCart }: { onAddToCart: (fragrance: typeof FRAGRANCES[number]) => void }) {
