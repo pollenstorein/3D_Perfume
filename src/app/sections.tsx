@@ -7,6 +7,7 @@ import carouselTwo from "./Images/2a bg.png";
 import storyTwo from "./Images/2e.jpg";
 import carouselThree from "./Images/3a bg.png";
 import storyThree from "./Images/3e.jpg";
+import momentImage from "./Images/4a.PNG";
 import introVideo from "./Images/intro.mp4";
 import { getOrderByTrackingId } from "./supabase";
 
@@ -58,6 +59,20 @@ export function BottleCarousel({ onAddToCart }: { onAddToCart: (fragrance: typeo
   const visiblePanels = [-1, 0, 1].map(offset => ({ offset, panel: BOTTLE_CAROUSEL[(active + offset + BOTTLE_CAROUSEL.length) % BOTTLE_CAROUSEL.length] }));
   const selected = BOTTLE_CAROUSEL[active];
   return <section id="fragrances" className="bg-white px-1 py-12 sm:px-3 md:px-10 md:py-16"><div className="mx-auto flex max-w-screen-2xl items-center gap-0.5 sm:gap-2 md:gap-8"><button type="button" onClick={() => move(-1)} aria-label="Previous fragrance" className="z-20 flex h-9 w-8 shrink-0 items-center justify-center rounded-full text-black transition-all duration-300 ease-out hover:scale-110 hover:bg-black/5 active:scale-95 sm:h-10 sm:w-10 md:h-12 md:w-12"><ArrowLeft size={22} strokeWidth={1.25} /></button><div className="grid h-[clamp(420px,60vh,680px)] min-w-0 flex-1 grid-cols-3 items-stretch gap-0.5 sm:gap-2 md:gap-8">{visiblePanels.map(({ offset, panel }) => <div key={`${panel.fragrance.id}-${offset}`} className={`bottle-stage-panel relative h-full overflow-hidden bg-white transition-all duration-500 ${offset === 0 ? "col-span-3 z-10 scale-[1.03] md:col-span-1" : "hidden scale-[0.86] opacity-55 md:block md:scale-90 md:opacity-75"}`} style={{ backgroundImage: `url(${panel.image})`, backgroundRepeat: "no-repeat" }}><div className="absolute inset-0" />{offset === 0 && <div className="absolute inset-x-1 bottom-5 text-center text-black sm:inset-x-2 md:bottom-8"><h2 className="text-sm font-medium uppercase tracking-[0.08em] sm:text-base md:text-2xl">{selected.fragrance.name}</h2><p className="mt-1 whitespace-nowrap text-[7px] font-normal uppercase tracking-[0.1em] sm:text-[8px] sm:tracking-[0.12em] md:text-xs">{selected.fragrance.tagline}</p><button type="button" onClick={() => onAddToCart(selected.fragrance)} className="mt-3 bg-black px-3 py-2 text-[8px] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-neutral-800 sm:px-4 sm:text-[9px] md:mt-5 md:px-6 md:py-2.5 md:text-[10px]">Buy Now</button></div>}</div>)}</div><button type="button" onClick={() => move(1)} aria-label="Next fragrance" className="z-20 flex h-9 w-8 shrink-0 items-center justify-center rounded-full text-black transition-all duration-300 ease-out hover:scale-110 hover:bg-black/5 active:scale-95 sm:h-10 sm:w-10 md:h-12 md:w-12"><ArrowRight size={22} strokeWidth={1.25} /></button></div></section>;
+}
+
+export function MomentSection() {
+  return <section className="relative h-[clamp(520px,78vh,860px)] overflow-hidden bg-black md:aspect-[3375/4219] md:h-auto"><img src={momentImage} alt="Find yourself in the moment" className="absolute inset-0 h-full w-full scale-[0.94] object-cover md:scale-100 md:object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" /><div className="absolute inset-x-6 bottom-12 z-10 text-center text-white md:bottom-16"><h2 className="text-2xl font-medium uppercase tracking-[0.08em] md:text-4xl">"Find yourself in the moment"</h2><button type="button" className="mt-6 border border-white bg-transparent px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-white transition-colors hover:bg-white hover:text-black">Know Pollen</button></div></section>;
+}
+
+const PRICING_CARDS = [
+  { image: storyOne, fragrance: FRAGRANCES[2] },
+  { image: storyTwo, fragrance: FRAGRANCES[0] },
+  { image: storyThree, fragrance: FRAGRANCES[1] },
+];
+
+export function PricingSection({ onAddToCart }: { onAddToCart: (fragrance: typeof FRAGRANCES[number]) => void }) {
+  return <section className="bg-black px-4 py-14 text-white sm:px-6 md:px-10 md:py-20"><div className="mx-auto max-w-screen-2xl"><h2 className="mb-10 text-center text-2xl font-medium uppercase tracking-[0.08em] sm:text-3xl md:mb-14 md:text-4xl">Shop the collection</h2><div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 md:gap-5 lg:gap-8">{PRICING_CARDS.map(({ image, fragrance }) => <article key={fragrance.id} className="mx-auto flex w-full max-w-sm flex-col text-center"><div className="aspect-[4/5] overflow-hidden bg-white"><img src={image} alt={fragrance.name} className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" /></div><div className="flex flex-1 flex-col items-center px-2 pt-5"><h3 className="text-sm font-semibold uppercase tracking-[0.08em] sm:text-base">{fragrance.name}</h3><p className="mt-3 text-sm text-white/80">₹{fragrance.price.toLocaleString()}</p><button type="button" onClick={() => onAddToCart(fragrance)} className="mt-6 bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-black transition-colors hover:bg-neutral-200">Add to cart</button></div></article>)}</div></div></section>;
 }
 
 export function FragrancesSection({ onAddToCart }: { onAddToCart: (fragrance: typeof FRAGRANCES[number]) => void }) {
