@@ -37,13 +37,13 @@ export function Hero() {
 }
 
 const STORY_PANELS = [
-  { image: storyOne, name: "Fresh Orchid", tagline: "BOLD. FEARLESS. UNAPOLOGETIC." },
-  { image: storyTwo, name: "Power of You", tagline: "SWEET. SEDUCTIVE. UNFORGETTABLE." },
   { image: storyThree, name: "Lost Cherry", tagline: "LIGHT. AIRY. EFFORTLESSLY REFINED." },
+  { image: storyTwo, name: "Power of You", tagline: "SWEET. SEDUCTIVE. UNFORGETTABLE." },
+  { image: storyOne, name: "Fresh Orchid", tagline: "BOLD. FEARLESS. UNAPOLOGETIC." },
 ];
 
 export function IntroStories() {
-  return <div>{STORY_PANELS.map((panel, index) => <section key={panel.name} className="relative h-[clamp(600px,90vh,900px)] overflow-hidden bg-black md:h-[clamp(620px,90vh,980px)]"><img src={panel.image} alt={panel.name} className={`absolute inset-0 h-full w-full object-cover md:object-contain ${index === 2 ? "object-[center_75%] md:object-center" : ""}`} /><div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-black/5" /><div className="absolute inset-x-6 bottom-10 z-10 mx-auto max-w-xl text-center text-white md:bottom-14"><h2 className="text-xl font-medium uppercase tracking-[0.08em] md:text-2xl">{panel.name}</h2><p className="mt-2 text-xs font-normal uppercase tracking-[0.14em] md:text-sm">{panel.tagline}</p><a href="#" className="mt-5 inline-block text-xs font-medium uppercase tracking-[0.12em] text-white underline underline-offset-8 transition-opacity hover:opacity-70">Explore Parfum</a></div></section>)}</div>;
+  return <div>{STORY_PANELS.map((panel, index) => <section key={panel.name} className="relative h-[clamp(600px,90vh,900px)] overflow-hidden bg-black md:h-[clamp(620px,90vh,980px)]"><img src={panel.image} alt={panel.name} className={`absolute inset-0 h-full w-full object-cover md:object-contain ${index === 2 ? "object-[60%_75%] md:object-center" : ""}`} /><div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-black/5" /><div className="absolute inset-x-6 bottom-10 z-10 mx-auto max-w-xl text-center text-white md:bottom-14"><h2 className="text-xl font-medium uppercase tracking-[0.08em] md:text-2xl">{panel.name}</h2><p className="mt-2 text-xs font-normal uppercase tracking-[0.14em] md:text-sm">{panel.tagline}</p><a href="#" className="mt-5 inline-block text-xs font-medium uppercase tracking-[0.12em] text-white underline underline-offset-8 transition-opacity hover:opacity-70">Explore Parfum</a></div></section>)}</div>;
 }
 
 const BOTTLE_CAROUSEL = [
