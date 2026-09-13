@@ -96,6 +96,18 @@ export default function App() {
   }, [cartItems]);
 
   useEffect(() => {
+    if (!giftSetOpen) return;
+    const resetScroll = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+    resetScroll();
+    const frame = window.requestAnimationFrame(resetScroll);
+    return () => window.cancelAnimationFrame(frame);
+  }, [giftSetOpen]);
+
+  useEffect(() => {
     let mounted = true;
     const restoreSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
