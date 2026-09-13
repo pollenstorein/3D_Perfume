@@ -1,6 +1,9 @@
 import { ArrowLeft, ArrowRight, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FRAGRANCES } from "./data";
+import storyOne from "./Images/1a.PNG";
+import storyTwo from "./Images/2a.PNG";
+import storyThree from "./Images/3c.PNG";
 import introVideo from "./Images/intro.mp4";
 import { getOrderByTrackingId } from "./supabase";
 
@@ -30,15 +33,22 @@ export function Hero() {
   return <section className="relative overflow-hidden bg-black"><video ref={videoRef} src={introVideo} autoPlay muted loop playsInline onLoadedMetadata={setVideoPlayback} aria-label="Know Pollen fragrance introduction" className="relative block h-auto w-full" /><div className="pointer-events-none absolute inset-0 bg-black/10" /><button type="button" onClick={toggleMute} aria-label={isMuted ? "Unmute video" : "Mute video"} className="absolute bottom-6 left-6 z-10 flex h-10 w-10 items-center justify-center border border-white/70 bg-black/35 text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-black">{isMuted ? <VolumeX size={17} /> : <Volume2 size={17} />}</button><a href="#fragrances" className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 border border-white bg-black/20 px-7 py-2.5 text-base font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white hover:text-black">Discover</a></section>;
 }
 
+const STORY_PANELS = [
+  { image: storyOne, name: "Fresh Orchid", tagline: "BOLD. FEARLESS. UNAPOLOGETIC." },
+  { image: storyTwo, name: "Power of You", tagline: "SWEET. SEDUCTIVE. UNFORGETTABLE." },
+  { image: storyThree, name: "Lost Cherry", tagline: "LIGHT. AIRY. EFFORTLESSLY REFINED." },
+];
+
+export function IntroStories() {
+  return <div>{STORY_PANELS.map((panel, index) => <section key={panel.name} className="relative h-[clamp(520px,78vh,860px)] overflow-hidden bg-black"><img src={panel.image} alt={panel.name} className={`absolute inset-0 h-full w-full object-cover ${index === 2 ? "object-[center_75%]" : ""}`} /><div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-black/5" /><div className="absolute inset-x-6 bottom-10 z-10 mx-auto max-w-xl text-center text-white md:bottom-14"><h2 className="text-xl font-medium uppercase tracking-[0.08em] md:text-2xl">{panel.name}</h2><p className="mt-2 text-xs font-normal uppercase tracking-[0.14em] md:text-sm">{panel.tagline}</p><a href="#" className="mt-5 inline-block text-xs font-medium uppercase tracking-[0.12em] text-white underline underline-offset-8 transition-opacity hover:opacity-70">Explore Parfum</a></div></section>)}</div>;
+}
+
 export function FragrancesSection({ onAddToCart }: { onAddToCart: (fragrance: typeof FRAGRANCES[number]) => void }) {
   const [active, setActive] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
   const dragStartX = useRef(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const go = (index: number) => setActive((index + FRAGRANCES.length) % FRAGRANCES.length);
-  const resetTimer = () => { if (timerRef.current) clearInterval(timerRef.current); timerRef.current = setInterval(() => setActive((index: number) => (index + 1) % FRAGRANCES.length), 5000); };
-  useEffect(() => { resetTimer(); return () => { if (timerRef.current) clearInterval(timerRef.current); }; }, []);
-  const change = (index: number) => { go(index); resetTimer(); setDragOffset(0); };
+  const change = (index: number) => { go(index); setDragOffset(0); };
   return <section id="fragrances" className="bg-white" style={{ borderTop: "1px solid #e8e8e8" }}><div className="flex items-center justify-between border-b border-[#e8e8e8] px-6 py-8 md:px-16"><p className="text-[10px] font-semibold uppercase tracking-[0.4em] text-black/40">Fragrances</p><div className="flex items-center gap-6"><span className="text-[10px] font-semibold tracking-[0.3em] text-black/35">{String(active + 1).padStart(2, "0")} / 03</span><div className="flex gap-2"><button onClick={() => change(active - 1)} aria-label="Previous" className="flex h-9 w-9 items-center justify-center border border-black/20"><ArrowLeft size={14} /></button><button onClick={() => change(active + 1)} aria-label="Next" className="flex h-9 w-9 items-center justify-center border border-black/20"><ArrowRight size={14} /></button></div></div></div><div className="overflow-hidden" onPointerDown={event => { dragStartX.current = event.clientX; }} onPointerUp={event => { const delta = dragStartX.current - event.clientX; dragStartX.current = 0; if (Math.abs(delta) > 50) change(active + (delta > 0 ? 1 : -1)); }}><div className="flex transition-transform duration-500" style={{ transform: `translateX(calc(-${active * 100}% + ${dragOffset}px))` }}>{FRAGRANCES.map((fragrance, index) => <article key={fragrance.id} className="grid w-full flex-shrink-0 grid-cols-1 md:grid-cols-2" style={{ minHeight: "clamp(480px, 72vh, 800px)" }}><div className="relative min-h-[280px] overflow-hidden bg-[#f5f0eb] md:min-h-0"><img src={fragrance.img} alt={fragrance.name} className="absolute inset-0 h-full w-full object-cover" /></div><div className="flex flex-col justify-center gap-6 bg-white px-6 py-10 md:gap-8 md:px-16 md:py-16"><div><p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.4em] text-black/35">{String(index + 1).padStart(2, "0")} / 03</p><h2 className="mb-3 text-[clamp(2.2rem,5vw,4rem)] font-extrabold leading-tight tracking-tight">{fragrance.name}</h2><p className="mb-6 text-base italic text-black/50">{fragrance.tagline}</p><p className="max-w-sm text-sm leading-relaxed text-black/65">{fragrance.description}</p></div><div><p className="mb-3 text-[9px] font-semibold uppercase tracking-[0.4em] text-black/35">Key Notes</p><div className="flex flex-wrap gap-2">{fragrance.notes.map(note => <span key={note} className="border border-black px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em]">{note}</span>)}</div></div><button type="button" onClick={() => onAddToCart(fragrance)} className="inline-flex self-start items-center gap-3 bg-black px-8 py-4 text-xs font-bold uppercase tracking-[0.18em] text-white">Add to cart <ArrowRight size={14} /></button></div></article>)}</div></div></section>;
 }
 
