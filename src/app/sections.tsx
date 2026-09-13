@@ -5,7 +5,7 @@ import introVideo from "./Images/intro.mp4";
 import { getOrderByTrackingId } from "./supabase";
 
 export function Hero() {
-  return <section className="relative min-h-screen overflow-hidden bg-black"><video src={introVideo} autoPlay muted loop playsInline aria-label="Know Pollen fragrance introduction" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-black/10" /></section>;
+  return <section className="relative min-h-[calc(100svh-72px)] overflow-hidden bg-black"><video src={introVideo} autoPlay muted loop playsInline aria-label="Know Pollen fragrance introduction" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-black/10" /></section>;
 }
 
 export function FragrancesSection({ onAddToCart }: { onAddToCart: (fragrance: typeof FRAGRANCES[number]) => void }) {

@@ -33,7 +33,7 @@ export function TopBar({ menuOpen, onMenuToggle, user, onBuyNow, cartCount, onCa
   }, []);
 
   return (
-    <header className={`absolute top-0 left-0 right-0 z-30 px-4 sm:px-6 md:px-10 transition-all duration-300 ${hidden ? "-translate-y-full" : "translate-y-0"}`} style={{ height: scrolled ? "56px" : "72px", background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.0)", backdropFilter: scrolled ? "blur(12px)" : "none", borderBottom: "1px solid rgba(0,0,0,0.14)" }}>
+    <header className={`relative z-30 px-4 sm:px-6 md:px-10 transition-all duration-300 ${hidden ? "-translate-y-full" : "translate-y-0"}`} style={{ height: scrolled ? "56px" : "72px", background: "rgba(255,255,255,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(0,0,0,0.14)" }}>
       <div className="mx-auto flex h-full w-full max-w-screen-xl items-center justify-between">
         <div className="flex items-center gap-3 sm:gap-4"><HamburgerButton onClick={onMenuToggle} open={menuOpen} /><span className="text-[10px] sm:text-xs md:text-sm font-bold tracking-[0.22em] sm:tracking-[0.28em] uppercase text-black select-none whitespace-nowrap">Know Pollen</span></div>
         <div className="flex items-center gap-2 sm:gap-3">
