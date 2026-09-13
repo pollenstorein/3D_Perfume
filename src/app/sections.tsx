@@ -8,21 +8,19 @@ export function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.defaultPlaybackRate = 0.5;
-      videoRef.current.playbackRate = 0.5;
-      videoRef.current.muted = false;
-      videoRef.current.volume = 1;
+      videoRef.current.defaultPlaybackRate = 0.75;
+      videoRef.current.playbackRate = 0.75;
+      videoRef.current.muted = true;
     }
   }, []);
   const setVideoPlayback = () => {
     if (videoRef.current) {
-      videoRef.current.defaultPlaybackRate = 0.5;
-      videoRef.current.playbackRate = 0.5;
-      videoRef.current.muted = false;
-      videoRef.current.volume = 1;
+      videoRef.current.defaultPlaybackRate = 0.75;
+      videoRef.current.playbackRate = 0.75;
+      videoRef.current.muted = true;
     }
   };
-  return <section className="relative overflow-hidden bg-black"><video ref={videoRef} src={introVideo} loop playsInline controls onLoadedMetadata={setVideoPlayback} aria-label="Know Pollen fragrance introduction" className="relative block h-auto w-full" /><div className="pointer-events-none absolute inset-0 bg-black/10" /></section>;
+  return <section className="relative overflow-hidden bg-black"><video ref={videoRef} src={introVideo} autoPlay muted loop playsInline controls onLoadedMetadata={setVideoPlayback} aria-label="Know Pollen fragrance introduction" className="relative block h-auto w-full" /><div className="pointer-events-none absolute inset-0 bg-black/10" /></section>;
 }
 
 export function FragrancesSection({ onAddToCart }: { onAddToCart: (fragrance: typeof FRAGRANCES[number]) => void }) {
