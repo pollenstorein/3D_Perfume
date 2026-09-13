@@ -1,6 +1,6 @@
-import pollen1 from "./Images/1a.PNG";
-import pollen2 from "./Images/2a.PNG";
-import pollen3 from "./Images/3a.PNG";
+import pollen1 from "./Images/1c.jpg";
+import pollen2 from "./Images/2e.jpg";
+import pollen3 from "./Images/3e.jpg";
 
 export const NAV_ITEMS = [
   { label: "SHOP", href: "#" },
@@ -18,7 +18,7 @@ export const FRAGRANCES = [
     tagline: "Bold. Fierce. Unapologetic.",
     description: "A commanding fragrance that asserts presence before you enter the room. Warm woods, dark musk, and a spark of citrus that lingers all day.",
     notes: ["Dark Musk", "Cedarwood", "Bergamot"],
-    price: 2499,
+    price: 499,
     img: pollen2,
   },
   {
@@ -27,8 +27,8 @@ export const FRAGRANCES = [
     tagline: "Sweet. Seductive. Unforgettable.",
     description: "A rich cherry accord layered over Turkish rose and bitter almond. Deeply sensual, dangerously addictive.",
     notes: ["Black Cherry", "Turkish Rose", "Bitter Almond"],
-    price: 2499,
-    img: pollen1,
+    price: 499,
+    img: pollen3,
   },
   {
     id: 3,
@@ -36,8 +36,8 @@ export const FRAGRANCES = [
     tagline: "Light. Airy. Effortlessly refined.",
     description: "White orchid petals lifted on a breeze of green tea and white cedar. Purity distilled into a single breath.",
     notes: ["White Orchid", "Green Tea", "White Cedar"],
-    price: 2499,
-    img: pollen3,
+    price: 499,
+    img: pollen1,
   },
 ];
 
