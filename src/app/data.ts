@@ -3,7 +3,7 @@ import pollen2 from "./Images/2e.jpg";
 import pollen3 from "./Images/3e.jpg";
 
 export const NAV_ITEMS = [
-  { label: "SHOP", href: "#" },
+  { label: "SHOP", href: "/collection" },
   { label: "GET YOUR BUNDLE", href: "/gift-set" },
   { label: "KNOW POLLEN", href: "#about" },
   { label: "TRACK ORDER", href: "#track" },

@@ -6,10 +6,10 @@ import { Footer } from "./footer";
 import giftGalleryOne from "./Images/4a.PNG";
 import { CookiePolicySection, OrdersShippingSection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
-import { BottleCarousel, CheckoutSection, GiftSetPage, Hero, IntroStories, MomentSection, PricingSection, TrackBanner } from "./sections";
+import { BottleCarousel, CheckoutSection, CollectionPageWithBack, GiftSetPage, Hero, IntroStories, MomentSection, PricingSection, TrackBanner } from "./sections";
 import { createOrder, supabase } from "./supabase";
 
-const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
+const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => window.location.pathname === "/collection" ? <CollectionPageWithBack onAddToCart={item => window.dispatchEvent(new CustomEvent("collection-add-to-cart", { detail: item }))} /> : <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
 
 const GLOBAL_STYLES = `
   html { scroll-behavior: smooth; overflow-x: hidden; }
@@ -62,7 +62,7 @@ export default function App() {
   const [authProvider, setAuthProvider] = useState("email");
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(() => window.location.pathname === "/checkout");
-  const [giftSetOpen, setGiftSetOpen] = useState(() => window.location.pathname === "/gift-set");
+  const [giftSetOpen, setGiftSetOpen] = useState(() => window.location.pathname === "/gift-set" || window.location.pathname === "/collection");
   const [checkoutAfterLogin, setCheckoutAfterLogin] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const shopScrollY = useRef(0);
@@ -79,6 +79,12 @@ export default function App() {
     };
     window.addEventListener("open-policy", handlePolicyNavigation);
     return () => window.removeEventListener("open-policy", handlePolicyNavigation);
+  }, []);
+
+  useEffect(() => {
+    const handleCollectionAdd = (event: Event) => handleAddToCart((event as CustomEvent<{ id: number; name: string; img: string; price: number }>).detail);
+    window.addEventListener("collection-add-to-cart", handleCollectionAdd);
+    return () => window.removeEventListener("collection-add-to-cart", handleCollectionAdd);
   }, []);
 
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
