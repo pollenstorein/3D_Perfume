@@ -1,9 +1,9 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { AuthModal, ProfileSettings, type User } from "./auth";
 import { FRAGRANCES } from "./data";
 import { Footer } from "./footer";
-import { CookiePolicySection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
+import { CookiePolicySection, OrdersShippingSection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
 import { BottleCarousel, CheckoutSection, Hero, IntroStories, MomentSection, PricingSection, TrackBanner } from "./sections";
 import { createOrder, supabase } from "./supabase";
@@ -38,6 +38,7 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
+  const [ordersShippingOpen, setOrdersShippingOpen] = useState(false);
   const [refundOpen, setRefundOpen] = useState(false);
   const [cookiesOpen, setCookiesOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -48,6 +49,8 @@ export default function App() {
   const [checkoutOpen, setCheckoutOpen] = useState(() => window.location.pathname === "/checkout");
   const [checkoutAfterLogin, setCheckoutAfterLogin] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const shopScrollY = useRef(0);
+  const pendingScrollRestore = useRef<number | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     try {
       const savedCart = localStorage.getItem("know-pollen-cart");
@@ -94,7 +97,16 @@ export default function App() {
   }, []);
 
   useLayoutEffect(() => {
-    if (!(privacyOpen || termsOpen || refundOpen || cookiesOpen)) return;
+    const legalPageOpen = privacyOpen || termsOpen || ordersShippingOpen || refundOpen || cookiesOpen;
+    if (!legalPageOpen) {
+      if (pendingScrollRestore.current === null) return;
+      const scrollY = pendingScrollRestore.current;
+      pendingScrollRestore.current = null;
+      document.documentElement.scrollTop = scrollY;
+      document.body.scrollTop = scrollY;
+      window.scrollTo({ top: scrollY, behavior: "auto" });
+      return;
+    }
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
     window.scrollTo(0, 0);
@@ -104,9 +116,17 @@ export default function App() {
       window.scrollTo(0, 0);
     });
     return () => window.cancelAnimationFrame(resetAfterRender);
-  }, [privacyOpen, termsOpen, refundOpen, cookiesOpen]);
+  }, [privacyOpen, termsOpen, ordersShippingOpen, refundOpen, cookiesOpen]);
 
   const openAuth = (mode: "login" | "signup") => { setAuthMode(mode); setAuthOpen(true); };
+  const openLegalPage = (setPageOpen: (open: boolean) => void) => {
+    shopScrollY.current = window.scrollY;
+    setPageOpen(true);
+  };
+  const closeLegalPage = (setPageOpen: (open: boolean) => void) => {
+    pendingScrollRestore.current = shopScrollY.current;
+    setPageOpen(false);
+  };
   const handleAuthSubmit = async ({ name, email, password }: { name: string; email: string; password: string }) => {
     const cleanedName = name.trim();
     const cleanedEmail = email.trim().toLowerCase();
@@ -178,7 +198,7 @@ export default function App() {
   };
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
-  const legalPage = cookiesOpen ? <CookiePolicySection onBack={() => setCookiesOpen(false)} /> : refundOpen ? <RefundPolicySection onBack={() => setRefundOpen(false)} /> : privacyOpen ? <PrivacyPolicySection onBack={() => setPrivacyOpen(false)} /> : termsOpen ? <TermsSection onBack={() => setTermsOpen(false)} /> : null;
+  const legalPage = cookiesOpen ? <CookiePolicySection onBack={() => closeLegalPage(setCookiesOpen)} /> : refundOpen ? <RefundPolicySection onBack={() => closeLegalPage(setRefundOpen)} /> : ordersShippingOpen ? <OrdersShippingSection onBack={() => closeLegalPage(setOrdersShippingOpen)} /> : privacyOpen ? <PrivacyPolicySection onBack={() => closeLegalPage(setPrivacyOpen)} /> : termsOpen ? <TermsSection onBack={() => closeLegalPage(setTermsOpen)} /> : null;
 
-  return <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}><style>{GLOBAL_STYLES}</style><SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} user={user} onLogin={() => openAuth("login")} onProfileSettings={() => setProfileSettingsOpen(true)} onSignOut={handleSignOut} /><TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open: boolean) => !open)} user={user} onBuyNow={handleBuyNow} cartCount={cartCount} onCartOpen={handleOpenCart} /><CartDrawer open={cartOpen} items={cartItems} onClose={() => setCartOpen(false)} onChangeQuantity={handleCartQuantity} onRemove={handleRemoveFromCart} onEmpty={handleEmptyCart} onCheckout={handleCheckout} /><AuthModal open={authOpen} mode={authMode} onClose={() => { setCheckoutAfterLogin(false); setAuthOpen(false); }} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} /><ProfileSettings open={profileSettingsOpen} user={user} provider={authProvider} onClose={() => setProfileSettingsOpen(false)} onPasswordChange={handlePasswordChange} /><main>{legalPage ? legalPage : checkoutOpen ? <CheckoutSection items={cartItems} onBack={() => { setCheckoutOpen(false); window.history.pushState(null, "", "/"); }} onPlaceOrder={handlePlaceOrder} /> : <><Hero /><IntroStories /><BottleCarousel onAddToCart={handleAddToCart} /><MomentSection /><PricingSection onAddToCart={handleAddToCart} cartItems={cartItems} onChangeQuantity={handleCartQuantity} /><TrackBanner userId={user?.id} onRequireLogin={() => openAuth("login")} /></>}</main>{!legalPage && !checkoutOpen && <Footer onOpenPrivacy={() => setPrivacyOpen(true)} onOpenTerms={() => setTermsOpen(true)} onOpenRefund={() => setRefundOpen(true)} onOpenCookies={() => setCookiesOpen(true)} />}</div>;
+  return <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}><style>{GLOBAL_STYLES}</style><SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} user={user} onLogin={() => openAuth("login")} onProfileSettings={() => setProfileSettingsOpen(true)} onSignOut={handleSignOut} /><TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open: boolean) => !open)} user={user} onBuyNow={handleBuyNow} cartCount={cartCount} onCartOpen={handleOpenCart} /><CartDrawer open={cartOpen} items={cartItems} onClose={() => setCartOpen(false)} onChangeQuantity={handleCartQuantity} onRemove={handleRemoveFromCart} onEmpty={handleEmptyCart} onCheckout={handleCheckout} /><AuthModal open={authOpen} mode={authMode} onClose={() => { setCheckoutAfterLogin(false); setAuthOpen(false); }} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} /><ProfileSettings open={profileSettingsOpen} user={user} provider={authProvider} onClose={() => setProfileSettingsOpen(false)} onPasswordChange={handlePasswordChange} /><main>{legalPage ? legalPage : checkoutOpen ? <CheckoutSection items={cartItems} onBack={() => { setCheckoutOpen(false); window.history.pushState(null, "", "/"); }} onPlaceOrder={handlePlaceOrder} /> : <><Hero /><IntroStories /><BottleCarousel onAddToCart={handleAddToCart} /><MomentSection /><PricingSection onAddToCart={handleAddToCart} cartItems={cartItems} onChangeQuantity={handleCartQuantity} /><TrackBanner userId={user?.id} onRequireLogin={() => openAuth("login")} /></>}</main>{!legalPage && !checkoutOpen && <Footer onOpenPrivacy={() => openLegalPage(setPrivacyOpen)} onOpenTerms={() => openLegalPage(setTermsOpen)} onOpenOrdersShipping={() => openLegalPage(setOrdersShippingOpen)} onOpenRefund={() => openLegalPage(setRefundOpen)} onOpenCookies={() => openLegalPage(setCookiesOpen)} />}</div>;
 }
