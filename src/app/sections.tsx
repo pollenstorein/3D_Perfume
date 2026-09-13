@@ -1,8 +1,11 @@
 import { ArrowLeft, ArrowRight, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FRAGRANCES } from "./data";
+import carouselOne from "./Images/1a bg.png";
 import storyOne from "./Images/1a.PNG";
+import carouselTwo from "./Images/2a bg.png";
 import storyTwo from "./Images/2a.PNG";
+import carouselThree from "./Images/3a bg.png";
 import storyThree from "./Images/3c.PNG";
 import introVideo from "./Images/intro.mp4";
 import { getOrderByTrackingId } from "./supabase";
@@ -40,7 +43,21 @@ const STORY_PANELS = [
 ];
 
 export function IntroStories() {
-  return <div>{STORY_PANELS.map((panel, index) => <section key={panel.name} className="relative h-[clamp(520px,78vh,860px)] overflow-hidden bg-black"><img src={panel.image} alt={panel.name} className={`absolute inset-0 h-full w-full object-cover ${index === 2 ? "object-[center_75%]" : ""}`} /><div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-black/5" /><div className="absolute inset-x-6 bottom-10 z-10 mx-auto max-w-xl text-center text-white md:bottom-14"><h2 className="text-xl font-medium uppercase tracking-[0.08em] md:text-2xl">{panel.name}</h2><p className="mt-2 text-xs font-normal uppercase tracking-[0.14em] md:text-sm">{panel.tagline}</p><a href="#" className="mt-5 inline-block text-xs font-medium uppercase tracking-[0.12em] text-white underline underline-offset-8 transition-opacity hover:opacity-70">Explore Parfum</a></div></section>)}</div>;
+  return <div>{STORY_PANELS.map((panel, index) => <section key={panel.name} className="relative h-[clamp(600px,90vh,900px)] overflow-hidden bg-black md:h-[clamp(620px,90vh,980px)]"><img src={panel.image} alt={panel.name} className={`absolute inset-0 h-full w-full object-cover md:object-contain ${index === 2 ? "object-[center_75%] md:object-center" : ""}`} /><div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-black/5" /><div className="absolute inset-x-6 bottom-10 z-10 mx-auto max-w-xl text-center text-white md:bottom-14"><h2 className="text-xl font-medium uppercase tracking-[0.08em] md:text-2xl">{panel.name}</h2><p className="mt-2 text-xs font-normal uppercase tracking-[0.14em] md:text-sm">{panel.tagline}</p><a href="#" className="mt-5 inline-block text-xs font-medium uppercase tracking-[0.12em] text-white underline underline-offset-8 transition-opacity hover:opacity-70">Explore Parfum</a></div></section>)}</div>;
+}
+
+const BOTTLE_CAROUSEL = [
+  { image: carouselOne, fragrance: FRAGRANCES[2] },
+  { image: carouselTwo, fragrance: FRAGRANCES[0] },
+  { image: carouselThree, fragrance: FRAGRANCES[1] },
+];
+
+export function BottleCarousel({ onAddToCart }: { onAddToCart: (fragrance: typeof FRAGRANCES[number]) => void }) {
+  const [active, setActive] = useState(0);
+  const move = (direction: number) => setActive(index => (index + direction + BOTTLE_CAROUSEL.length) % BOTTLE_CAROUSEL.length);
+  const visiblePanels = [-1, 0, 1].map(offset => ({ offset, panel: BOTTLE_CAROUSEL[(active + offset + BOTTLE_CAROUSEL.length) % BOTTLE_CAROUSEL.length] }));
+  const selected = BOTTLE_CAROUSEL[active];
+  return <section id="fragrances" className="bg-white px-1 py-12 sm:px-3 md:px-10 md:py-16"><div className="mx-auto flex max-w-screen-2xl items-center gap-0.5 sm:gap-2 md:gap-8"><button type="button" onClick={() => move(-1)} aria-label="Previous fragrance" className="z-20 flex h-9 w-8 shrink-0 items-center justify-center rounded-full text-black transition-all duration-300 ease-out hover:scale-110 hover:bg-black/5 active:scale-95 sm:h-10 sm:w-10 md:h-12 md:w-12"><ArrowLeft size={22} strokeWidth={1.25} /></button><div className="grid h-[clamp(420px,60vh,680px)] min-w-0 flex-1 grid-cols-3 items-stretch gap-0.5 sm:gap-2 md:gap-8">{visiblePanels.map(({ offset, panel }) => <div key={`${panel.fragrance.id}-${offset}`} className={`bottle-stage-panel relative h-full overflow-hidden bg-white transition-all duration-500 ${offset === 0 ? "col-span-3 z-10 scale-[1.03] md:col-span-1" : "hidden scale-[0.86] opacity-55 md:block md:scale-90 md:opacity-75"}`} style={{ backgroundImage: `url(${panel.image})`, backgroundRepeat: "no-repeat" }}><div className="absolute inset-0" />{offset === 0 && <div className="absolute inset-x-1 bottom-5 text-center text-black sm:inset-x-2 md:bottom-8"><h2 className="text-sm font-medium uppercase tracking-[0.08em] sm:text-base md:text-2xl">{selected.fragrance.name}</h2><p className="mt-1 whitespace-nowrap text-[7px] font-normal uppercase tracking-[0.1em] sm:text-[8px] sm:tracking-[0.12em] md:text-xs">{selected.fragrance.tagline}</p><button type="button" onClick={() => onAddToCart(selected.fragrance)} className="mt-3 bg-black px-3 py-2 text-[8px] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-neutral-800 sm:px-4 sm:text-[9px] md:mt-5 md:px-6 md:py-2.5 md:text-[10px]">Buy Now</button></div>}</div>)}</div><button type="button" onClick={() => move(1)} aria-label="Next fragrance" className="z-20 flex h-9 w-8 shrink-0 items-center justify-center rounded-full text-black transition-all duration-300 ease-out hover:scale-110 hover:bg-black/5 active:scale-95 sm:h-10 sm:w-10 md:h-12 md:w-12"><ArrowRight size={22} strokeWidth={1.25} /></button></div></section>;
 }
 
 export function FragrancesSection({ onAddToCart }: { onAddToCart: (fragrance: typeof FRAGRANCES[number]) => void }) {
