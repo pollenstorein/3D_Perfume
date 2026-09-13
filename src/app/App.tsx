@@ -3,9 +3,10 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AuthModal, ProfileSettings, type User } from "./auth";
 import { FRAGRANCES } from "./data";
 import { Footer } from "./footer";
+import giftGalleryOne from "./Images/4a.PNG";
 import { CookiePolicySection, OrdersShippingSection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
-import { BottleCarousel, CheckoutSection, Hero, IntroStories, MomentSection, PricingSection, TrackBanner } from "./sections";
+import { BottleCarousel, CheckoutSection, GiftSetGallerySection, Hero, IntroStories, MomentSection, PricingSection, TrackBanner } from "./sections";
 import { createOrder, supabase } from "./supabase";
 
 const GLOBAL_STYLES = `
@@ -18,7 +19,18 @@ const GLOBAL_STYLES = `
   #fragrances > div:nth-child(2) article > div:first-child { background: #fff; }
   #fragrances > div:nth-child(2) article > div:first-child img { object-fit: contain; mix-blend-mode: multiply; }
   .bottle-stage-panel { background-position: center bottom; background-size: auto 125%; }
-  @media (min-width: 768px) { .bottle-stage-panel { background-position: center bottom; background-size: auto 100%; } }
+  @media (min-width: 768px) {
+    .bottle-stage-panel { background-position: center bottom; background-size: auto 100%; }
+    .hidden.grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .hidden.grid-cols-4 > div:first-child { grid-column: span 2; }
+  }
+  @media (min-width: 1024px) {
+    [class*="max-w-[1440px]"] { align-items: start; }
+    [class*="max-w-[1440px]"] > div:last-child { position: sticky; top: 0; align-self: start; height: fit-content; }
+  }
+  @media (max-width: 767px) {
+    button[aria-label="Previous gift set image"], button[aria-label="Next gift set image"] { display: none; }
+  }
   @keyframes slide-progress { from { width: 0%; } to { width: 100%; } }
 `;
 
@@ -47,6 +59,7 @@ export default function App() {
   const [authProvider, setAuthProvider] = useState("email");
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(() => window.location.pathname === "/checkout");
+  const [giftSetOpen, setGiftSetOpen] = useState(() => window.location.pathname === "/gift-set");
   const [checkoutAfterLogin, setCheckoutAfterLogin] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const shopScrollY = useRef(0);
@@ -163,6 +176,8 @@ export default function App() {
     setAuthProvider("email");
   };
   const handleBuyNow = () => scrollToHash("#fragrances");
+  const handleOpenGiftSet = () => { setGiftSetOpen(true); window.history.pushState(null, "", "/gift-set"); window.scrollTo(0, 0); };
+  const handleBackFromGiftSet = () => { setGiftSetOpen(false); window.history.pushState(null, "", "/"); window.scrollTo(0, 0); };
   const handleOpenCart = () => setCartOpen(true);
   const handleAddToCart = (fragrance: { id: number; name: string; img: string; price: number }) => {
     setCartItems(items => {
@@ -200,5 +215,5 @@ export default function App() {
 
   const legalPage = cookiesOpen ? <CookiePolicySection onBack={() => closeLegalPage(setCookiesOpen)} /> : refundOpen ? <RefundPolicySection onBack={() => closeLegalPage(setRefundOpen)} /> : ordersShippingOpen ? <OrdersShippingSection onBack={() => closeLegalPage(setOrdersShippingOpen)} /> : privacyOpen ? <PrivacyPolicySection onBack={() => closeLegalPage(setPrivacyOpen)} /> : termsOpen ? <TermsSection onBack={() => closeLegalPage(setTermsOpen)} /> : null;
 
-  return <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}><style>{GLOBAL_STYLES}</style><SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} user={user} onLogin={() => openAuth("login")} onProfileSettings={() => setProfileSettingsOpen(true)} onSignOut={handleSignOut} /><TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open: boolean) => !open)} user={user} onBuyNow={handleBuyNow} cartCount={cartCount} onCartOpen={handleOpenCart} /><CartDrawer open={cartOpen} items={cartItems} onClose={() => setCartOpen(false)} onChangeQuantity={handleCartQuantity} onRemove={handleRemoveFromCart} onEmpty={handleEmptyCart} onCheckout={handleCheckout} /><AuthModal open={authOpen} mode={authMode} onClose={() => { setCheckoutAfterLogin(false); setAuthOpen(false); }} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} /><ProfileSettings open={profileSettingsOpen} user={user} provider={authProvider} onClose={() => setProfileSettingsOpen(false)} onPasswordChange={handlePasswordChange} /><main>{legalPage ? legalPage : checkoutOpen ? <CheckoutSection items={cartItems} onBack={() => { setCheckoutOpen(false); window.history.pushState(null, "", "/"); }} onPlaceOrder={handlePlaceOrder} /> : <><Hero /><IntroStories /><BottleCarousel onAddToCart={handleAddToCart} /><MomentSection /><PricingSection onAddToCart={handleAddToCart} cartItems={cartItems} onChangeQuantity={handleCartQuantity} /><TrackBanner userId={user?.id} onRequireLogin={() => openAuth("login")} /></>}</main>{!legalPage && !checkoutOpen && <Footer onOpenPrivacy={() => openLegalPage(setPrivacyOpen)} onOpenTerms={() => openLegalPage(setTermsOpen)} onOpenOrdersShipping={() => openLegalPage(setOrdersShippingOpen)} onOpenRefund={() => openLegalPage(setRefundOpen)} onOpenCookies={() => openLegalPage(setCookiesOpen)} />}</div>;
+  return <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}><style>{GLOBAL_STYLES}</style><SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} user={user} onLogin={() => openAuth("login")} onProfileSettings={() => setProfileSettingsOpen(true)} onSignOut={handleSignOut} /><TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open: boolean) => !open)} user={user} onBuyNow={handleBuyNow} cartCount={cartCount} onCartOpen={handleOpenCart} /><CartDrawer open={cartOpen} items={cartItems} onClose={() => setCartOpen(false)} onChangeQuantity={handleCartQuantity} onRemove={handleRemoveFromCart} onEmpty={handleEmptyCart} onCheckout={handleCheckout} /><AuthModal open={authOpen} mode={authMode} onClose={() => { setCheckoutAfterLogin(false); setAuthOpen(false); }} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} /><ProfileSettings open={profileSettingsOpen} user={user} provider={authProvider} onClose={() => setProfileSettingsOpen(false)} onPasswordChange={handlePasswordChange} /><main>{legalPage ? legalPage : giftSetOpen ? <GiftSetGallerySection onAddBundle={() => handleAddToCart({ id: 4, name: "The Legacy Set", img: giftGalleryOne, price: 1899 })} onBack={handleBackFromGiftSet} /> : checkoutOpen ? <CheckoutSection items={cartItems} onBack={() => { setCheckoutOpen(false); window.history.pushState(null, "", "/"); }} onPlaceOrder={handlePlaceOrder} /> : <><Hero /><IntroStories /><BottleCarousel onAddToCart={handleAddToCart} /><MomentSection /><PricingSection onAddToCart={handleAddToCart} cartItems={cartItems} onChangeQuantity={handleCartQuantity} /><TrackBanner userId={user?.id} onRequireLogin={() => openAuth("login")} /></>}</main>{!legalPage && !checkoutOpen && !giftSetOpen && <Footer onOpenPrivacy={() => openLegalPage(setPrivacyOpen)} onOpenTerms={() => openLegalPage(setTermsOpen)} onOpenOrdersShipping={() => openLegalPage(setOrdersShippingOpen)} onOpenRefund={() => openLegalPage(setRefundOpen)} onOpenCookies={() => openLegalPage(setCookiesOpen)} />}</div>;
 }
