@@ -28,6 +28,14 @@ export async function getOrderByTrackingId(userId: string, trackingId: string): 
 }
 
 export async function createOrder(userId: string, totalAmount: number) {
+  if (!userId) throw new Error("You must be signed in before placing an order.");
+
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) throw new Error(sessionError.message);
+  if (!session?.user || session.user.id !== userId) {
+    throw new Error("Your session has expired. Please log in again to place your order.");
+  }
+
   const trackingId = `KP-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const { data, error } = await supabase.from("orders").insert({
     user_id: userId,
