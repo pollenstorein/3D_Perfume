@@ -27,6 +27,7 @@ const GLOBAL_STYLES = `
     .hidden.grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .hidden.grid-cols-4 > div:first-child { grid-column: span 2; }
   }
+  }
   @media (min-width: 1024px) {
     [class*="max-w-[1440px]"] { align-items: start; }
     [class*="max-w-[1440px]"] > div:last-child { position: sticky; top: 0; align-self: start; height: fit-content; }
