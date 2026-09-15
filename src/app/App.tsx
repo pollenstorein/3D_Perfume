@@ -7,7 +7,13 @@ import giftGalleryOne from "./Images/4a.PNG";
 import { CookiePolicySection, OrdersShippingSection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
 import { BottleCarousel, CheckoutSection, CollectionPageWithBack, GiftSetPage, Hero, IntroStories, MomentSection, PricingSection, TrackBanner } from "./sections";
-import { createOrder, getOrdersByUser, supabase } from "./supabase";
+import { capturePayment, createOrder, createPaymentOrder, getOrdersByUser, supabase } from "./supabase";
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+  }
+}
 
 const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => window.location.pathname === "/collection" ? <CollectionPageWithBack onAddToCart={item => window.dispatchEvent(new CustomEvent("collection-add-to-cart", { detail: item }))} /> : <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
 
@@ -81,7 +87,7 @@ export default function App() {
       if (policy === "refund") setRefundOpen(true);
       if (policy === "cookies") setCookiesOpen(true);
     };
-    window.addEventListener("open-policy", handlePolicyNavigation);
+<button type="button" onClick={handlePayNow} className="mt-2 w-full bg-black px-5 py-4 text-xs font-bold uppercase tracking-[0.18em] text-white hover:bg-neutral-800">Pay now</button>
     return () => window.removeEventListener("open-policy", handlePolicyNavigation);
   }, []);
 
@@ -257,6 +263,44 @@ export default function App() {
       window.history.pushState(null, "", "/payment");
     } catch (error) {
       window.alert(error instanceof Error ? error.message : "Unable to create your order.");
+    }
+  };
+  const handlePayNow = async () => {
+    if (!paymentOrder || !user) return;
+    try {
+      const gatewayOrder = await createPaymentOrder(Number(paymentOrder.total_amount ?? 0), paymentOrder.tracking_id);
+      if (!window.Razorpay) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("Unable to load the Razorpay payment window."));
+          document.body.appendChild(script);
+        });
+      }
+      if (!window.Razorpay) throw new Error("Razorpay is unavailable. Please try again.");
+      const razorpay = new window.Razorpay({
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: gatewayOrder.amount,
+        currency: gatewayOrder.currency,
+        name: "Know Pollen",
+        description: paymentOrder.title,
+        order_id: gatewayOrder.id,
+        prefill: { name: user.name, email: user.email },
+        theme: { color: "#0a0a0a" },
+        handler: async (response: { razorpay_payment_id: string }) => {
+          try {
+            await capturePayment(response.razorpay_payment_id, Number(paymentOrder.total_amount ?? 0));
+            setPaymentOrder(current => current ? { ...current, status: "paid" } : current);
+            window.alert("Payment successful. Your order is confirmed.");
+          } catch (error) {
+            window.alert(error instanceof Error ? error.message : "Payment was received but confirmation failed.");
+          }
+        },
+      });
+      razorpay.open();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Unable to start payment.");
     }
   };
   const openOrderHistory = async () => {

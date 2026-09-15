@@ -4,9 +4,32 @@ const supabaseUrl = "https://mwfcuajifedtzjtmvdbh.supabase.co";
 const supabaseAnonKey = "sb_publishable_B22PSzXKU4uhmB8Vyb76NQ_8moZLUyR";
 
 export const PAYMENT_API_BASE_URL = "https://threed-perfume-server.onrender.com";
+export const PAYMENT_ORDER_URL = `${PAYMENT_API_BASE_URL}/server_create_order`;
 export const PAYMENT_CAPTURE_URL = `${PAYMENT_API_BASE_URL}/server_capture_payment`;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+export async function createPaymentOrder(amount: number, receipt: string) {
+  const response = await fetch(PAYMENT_ORDER_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ amount, receipt }),
+  });
+  const result = await response.json() as { success?: boolean; data?: { id: string; amount: number; currency: string }; error?: string };
+  if (!response.ok || !result.success || !result.data) throw new Error(result.error ?? "Unable to start payment.");
+  return result.data;
+}
+
+export async function capturePayment(paymentId: string, amount: number) {
+  const response = await fetch(PAYMENT_CAPTURE_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ paymentId, amount: Math.round(amount * 100) }),
+  });
+  const result = await response.json() as { success?: boolean; error?: string };
+  if (!response.ok || !result.success) throw new Error(result.error ?? "Unable to capture payment.");
+  return result;
+}
 
 export type Order = {
   id: string;
