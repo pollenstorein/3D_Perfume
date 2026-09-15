@@ -3,6 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = "https://mwfcuajifedtzjtmvdbh.supabase.co";
 const supabaseAnonKey = "sb_publishable_B22PSzXKU4uhmB8Vyb76NQ_8moZLUyR";
 
+export const PAYMENT_API_BASE_URL = "https://threed-perfume-server.onrender.com";
+export const PAYMENT_CAPTURE_URL = `${PAYMENT_API_BASE_URL}/server_capture_payment`;
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export type Order = {
