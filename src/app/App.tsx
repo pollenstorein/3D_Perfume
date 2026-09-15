@@ -266,9 +266,9 @@ export default function App() {
   };
   const handlePayNow = async (order = paymentOrder) => {
     if (!order || !user) return;
-    const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+    const razorpayKey = import.meta.env.RAZORPAY_KEY_ID;
     if (!razorpayKey || razorpayKey.includes("your_")) {
-      window.alert("Razorpay is not configured. Add VITE_RAZORPAY_KEY_ID in Vercel Environment Variables and redeploy the client.");
+      window.alert("Razorpay is not configured. Add RAZORPAY_KEY_ID in Vercel Environment Variables and redeploy the client.");
       return;
     }
     try {
