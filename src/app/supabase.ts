@@ -46,3 +46,14 @@ export async function createOrder(userId: string, totalAmount: number) {
   if (error) throw error;
   return data;
 }
+
+export async function getOrdersByUser(userId: string): Promise<Order[]> {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("id, tracking_id, status, total_amount, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return data ?? [];
+}

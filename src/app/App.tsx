@@ -7,7 +7,7 @@ import giftGalleryOne from "./Images/4a.PNG";
 import { CookiePolicySection, OrdersShippingSection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
 import { BottleCarousel, CheckoutSection, CollectionPageWithBack, GiftSetPage, Hero, IntroStories, MomentSection, PricingSection, TrackBanner } from "./sections";
-import { createOrder, supabase } from "./supabase";
+import { createOrder, getOrdersByUser, supabase } from "./supabase";
 
 const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => window.location.pathname === "/collection" ? <CollectionPageWithBack onAddToCart={item => window.dispatchEvent(new CustomEvent("collection-add-to-cart", { detail: item }))} /> : <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
 
@@ -65,6 +65,10 @@ export default function App() {
   const [giftSetOpen, setGiftSetOpen] = useState(() => window.location.pathname === "/gift-set" || window.location.pathname === "/collection");
   const [checkoutAfterLogin, setCheckoutAfterLogin] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [paymentOrder, setPaymentOrder] = useState<{ id: string; tracking_id: string; status: string; total_amount: number | null; created_at: string; title: string } | null>(null);
+  const [orderHistoryOpen, setOrderHistoryOpen] = useState(false);
+  const [orderHistory, setOrderHistory] = useState<Array<{ id: string; tracking_id: string; status: string; total_amount: number | null; created_at: string; title: string }>>([]);
   const shopScrollY = useRef(0);
   const pendingScrollRestore = useRef<number | null>(null);
 
@@ -240,11 +244,31 @@ export default function App() {
     const totalAmount = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     try {
       const order = await createOrder(user.id ?? "", totalAmount);
+      const titles = cartItems.map(item => item.name).join(", ");
+      const createdOrder = {
+        ...order,
+        title: titles,
+      };
       setCartItems([]);
       setCartOpen(false);
-      window.alert(`Order created. Tracking ID: ${order.tracking_id}`);
+      setPaymentOrder(createdOrder);
+      setPaymentOpen(true);
+      setCheckoutOpen(false);
+      window.history.pushState(null, "", "/payment");
     } catch (error) {
       window.alert(error instanceof Error ? error.message : "Unable to create your order.");
+    }
+  };
+  const openOrderHistory = async () => {
+    if (!user) { openAuth("login"); return; }
+    try {
+      const orders = await getOrdersByUser(user.id ?? "");
+      setOrderHistory(orders.map(order => ({ ...order, title: order.total_amount ? `Order for ${order.tracking_id}` : "Order" })));
+      setOrderHistoryOpen(true);
+      setMenuOpen(false);
+      window.history.pushState(null, "", "/orders");
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Unable to load your order history.");
     }
   };
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
