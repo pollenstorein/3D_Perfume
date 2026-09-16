@@ -7,7 +7,7 @@ import giftGalleryOne from "./Images/4a.PNG";
 import { CookiePolicySection, OrdersShippingSection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
 import { BottleCarousel, CheckoutSection, CollectionPageWithBack, GiftSetPage, Hero, IntroStories, MomentSection, PricingSection, TrackBanner } from "./sections";
-import { capturePayment, createOrder, createPaymentOrder, getOrdersByUser, markOrderPaid, supabase } from "./supabase";
+import { capturePayment, createOrder, createPaymentOrder, deleteOrder, getOrdersByUser, markOrderPaid, supabase } from "./supabase";
 
 declare global {
   interface Window {
@@ -225,17 +225,20 @@ export default function App() {
   const handleOpenCart = () => setCartOpen(true);
   const handleAddToCart = (fragrance: { id: number; name: string; img: string; price: number }) => {
     const price = fragrance.id === 4 ? 1500 : fragrance.price;
-    setCartItems(items => {
-      const existing = items.find(item => item.id === fragrance.id);
-      if (existing) return items.map(item => item.id === fragrance.id ? { ...item, price, quantity: item.quantity + 1 } : item);
-      return [...items, { id: fragrance.id, name: fragrance.name, img: fragrance.img, price, quantity: 1 }];
-    });
+    const nextCartItems = cartItems.some(item => item.id === fragrance.id)
+      ? cartItems.map(item => item.id === fragrance.id ? { ...item, price, quantity: item.quantity + 1 } : item)
+      : [...cartItems, { id: fragrance.id, name: fragrance.name, img: fragrance.img, price, quantity: 1 }];
+    setCartItems(nextCartItems);
+    if (fragrance.id === 4) {
+      handleCheckout(nextCartItems);
+      return;
+    }
   };
   const handleCartQuantity = (id: number, change: number) => setCartItems(items => items.flatMap(item => item.id === id ? [{ ...item, quantity: item.quantity + change }].filter(updated => updated.quantity > 0) : [item]));
   const handleRemoveFromCart = (id: number) => setCartItems(items => items.filter(item => item.id !== id));
   const handleEmptyCart = () => setCartItems([]);
-  const handleCheckout = () => {
-    if (cartItems.length === 0) return;
+  const handleCheckout = (items = cartItems) => {
+    if (items.length === 0) return;
     if (!user) {
       setCheckoutAfterLogin(true);
       return openAuth("login");
@@ -346,6 +349,15 @@ export default function App() {
       window.alert(error instanceof Error ? error.message : "Unable to load your order history.");
     }
   };
+  const handleDeletePendingOrder = async (orderId: string) => {
+    if (!user || !window.confirm("Delete this pending order?")) return;
+    try {
+      await deleteOrder(user.id, orderId);
+      setOrderHistory(orders => orders.filter(order => order.id !== orderId));
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Unable to delete this pending order.");
+    }
+  };
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   const legalPage = cookiesOpen ? <CookiePolicySection onBack={() => closeLegalPage(setCookiesOpen)} /> : refundOpen ? <RefundPolicySection onBack={() => closeLegalPage(setRefundOpen)} /> : ordersShippingOpen ? <OrdersShippingSection onBack={() => closeLegalPage(setOrdersShippingOpen)} /> : privacyOpen ? <PrivacyPolicySection onBack={() => closeLegalPage(setPrivacyOpen)} /> : termsOpen ? <TermsSection onBack={() => closeLegalPage(setTermsOpen)} /> : null;
@@ -361,7 +373,7 @@ export default function App() {
       <main>
         {legalPage ? legalPage : giftSetOpen ? <GiftSetGallerySection onAddBundle={() => handleAddToCart({ id: 4, name: "The Legacy Set", img: giftGalleryOne, price: 1899 })} onBack={handleBackFromGiftSet} /> : paymentOpen && paymentOrder ? <section className="min-h-screen bg-white px-6 pb-24 pt-32 md:px-16"><div className="mx-auto max-w-screen-xl"><button type="button" onClick={() => { setPaymentOpen(false); setPaymentOrder(null); window.history.pushState(null, "", "/"); }} className="mb-12 inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-black/55 hover:text-black"><span className="text-lg">←</span> Back to collection</button><div className="grid gap-10 md:grid-cols-[1.1fr_0.9fr]"><div className="rounded-none border border-black/10 bg-[#fafafa] p-8"><p className="text-[10px] font-bold uppercase tracking-[0.35em] text-black/45">Payment</p><h1 className="mt-4 text-4xl font-extrabold tracking-tight md:text-5xl">Complete payment</h1><p className="mt-6 max-w-md text-sm leading-relaxed text-black/60">Your order has been created. Confirm the details below and proceed with the payment to complete checkout.</p><div className="mt-8 space-y-4 text-sm"><div className="flex items-center justify-between border-b border-black/10 pb-3"><span className="text-black/50">Tracking ID</span><span className="font-semibold">{paymentOrder.tracking_id}</span></div><div className="flex items-center justify-between border-b border-black/10 pb-3"><span className="text-black/50">Order</span><span className="font-semibold text-right">{paymentOrder.title}</span></div><div className="flex items-center justify-between border-b border-black/10 pb-3"><span className="text-black/50">Amount</span><span className="font-semibold">₹{Number(paymentOrder.total_amount ?? 0).toLocaleString()}</span></div><div className="flex items-center justify-between"><span className="text-black/50">Status</span><span className="font-semibold uppercase tracking-[0.12em]">{paymentOrder.status}</span></div></div></div><div className="bg-[#f5f5f5] p-8"><p className="text-[10px] font-bold uppercase tracking-[0.35em] text-black/45">Payment details</p><div className="mt-6 space-y-6"><div className="rounded-none border border-black/10 bg-white p-4"><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">Gateway</p><p className="mt-2 text-lg font-semibold">Razorpay</p></div><div className="rounded-none border border-black/10 bg-white p-4"><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">Order value</p><p className="mt-2 text-lg font-semibold">₹{Number(paymentOrder.total_amount ?? 0).toLocaleString()}</p></div><button type="button" onClick={() => { window.alert("Payment gateway integration can be connected here using your Razorpay key."); }} className="mt-2 w-full bg-black px-5 py-4 text-xs font-bold uppercase tracking-[0.18em] text-white hover:bg-neutral-800">Pay now</button></div></div></div></div></section> : checkoutOpen ? <CheckoutSection items={cartItems} onBack={() => { setCheckoutOpen(false); window.history.pushState(null, "", "/"); }} onPlaceOrder={handlePlaceOrder} /> : orderHistoryOpen ? <section className="min-h-screen bg-white px-6 pb-24 pt-32 md:px-16"><div className="mx-auto max-w-screen-xl"><button type="button" onClick={() => { setOrderHistoryOpen(false); window.history.pushState(null, "", "/"); }} className="mb-12 inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-black/55 hover:text-black"><span className="text-lg">←</span> Back</button><div className="mb-8"><p className="text-[10px] font-bold uppercase tracking-[0.35em] text-black/45">Account</p><h1 className="mt-3 text-4xl font-extrabold tracking-tight md:text-5xl">Order history</h1></div>{orderHistory.length === 0 ? <p className="text-sm text-black/55">No orders yet.</p> : <div className="space-y-5">{orderHistory.map(order => <article key={order.id} className="border border-black/10 bg-[#fafafa] p-5"><div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">{new Date(order.created_at).toLocaleDateString()}</p><h2 className="mt-2 text-lg font-bold">{order.title}</h2></div><div className="text-left md:text-right"><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">Status</p><p className="mt-2 uppercase tracking-[0.12em]">{order.status}</p></div></div><div className="mt-5 grid gap-4 md:grid-cols-3"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">Track ID</p><p className="mt-2 text-sm font-medium">{order.tracking_id}</p></div><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">Order Date</p><p className="mt-2 text-sm font-medium">{new Date(order.created_at).toLocaleString()}</p></div><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">Payment</p><p className="mt-2 text-sm font-medium">₹{Number(order.total_amount ?? 0).toLocaleString()}</p></div></div></article>)}</div>}</div></section> : <><Hero /><IntroStories /><BottleCarousel onAddToCart={handleAddToCart} /><MomentSection /><PricingSection onAddToCart={handleAddToCart} cartItems={cartItems} onChangeQuantity={handleCartQuantity} /><TrackBanner userId={user?.id} onRequireLogin={() => openAuth("login")} /></>}
       </main>
-      {orderHistoryOpen && orderHistory.some(order => order.status.toLowerCase() === "pending") && <aside className="fixed bottom-6 right-6 z-30 w-[min(360px,calc(100vw-3rem))] border border-black/10 bg-white p-5 shadow-xl"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/45">Pending payments</p><div className="mt-4 space-y-3">{orderHistory.filter(order => order.status.toLowerCase() === "pending").map(order => <div key={order.id} className="flex items-center justify-between gap-4 border-t border-black/10 pt-3"><div className="min-w-0"><p className="truncate text-sm font-semibold">{order.title}</p><p className="mt-1 text-xs text-black/50">₹{Number(order.total_amount ?? 0).toLocaleString()}</p></div><button type="button" onClick={() => handlePayNow(order)} className="shrink-0 bg-black px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white hover:bg-neutral-800">Pay now</button></div>)}</div></aside>}
+      {orderHistoryOpen && orderHistory.some(order => order.status.toLowerCase() === "pending") && <aside className="fixed bottom-6 right-6 z-30 w-[min(360px,calc(100vw-3rem))] border border-black/10 bg-white p-5 shadow-xl"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/45">Pending payments</p><div className="mt-4 space-y-3">{orderHistory.filter(order => order.status.toLowerCase() === "pending").map(order => <div key={order.id} className="flex items-center justify-between gap-4 border-t border-black/10 pt-3"><div className="min-w-0"><p className="truncate text-sm font-semibold">{order.title}</p><p className="mt-1 text-xs text-black/50">₹{Number(order.total_amount ?? 0).toLocaleString()}</p></div><div className="flex shrink-0 gap-2"><button type="button" onClick={() => handlePayNow(order)} className="bg-black px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white hover:bg-neutral-800">Pay now</button><button type="button" onClick={() => void handleDeletePendingOrder(order.id)} className="border border-black/20 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-black hover:bg-black hover:text-white">Delete</button></div></div>)}</div></aside>}
       {!legalPage && !checkoutOpen && !giftSetOpen && !paymentOpen && !orderHistoryOpen && <Footer onOpenPrivacy={() => openLegalPage(setPrivacyOpen)} onOpenTerms={() => openLegalPage(setTermsOpen)} onOpenOrdersShipping={() => openLegalPage(setOrdersShippingOpen)} onOpenRefund={() => openLegalPage(setRefundOpen)} onOpenCookies={() => openLegalPage(setCookiesOpen)} />}
     </div>
   );

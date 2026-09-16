@@ -42,3 +42,9 @@ create policy "Users can update own orders"
   on public.orders for update
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+
+drop policy if exists "Users can delete own pending orders" on public.orders;
+
+create policy "Users can delete own pending orders"
+  on public.orders for delete
+  using (auth.uid() = user_id and status = 'pending');

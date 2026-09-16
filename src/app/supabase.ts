@@ -93,3 +93,13 @@ export async function markOrderPaid(userId: string, orderId: string) {
   if (error) throw error;
   return data;
 }
+
+export async function deleteOrder(userId: string, orderId: string) {
+  const { error } = await supabase
+    .from("orders")
+    .delete()
+    .eq("id", orderId)
+    .eq("user_id", userId);
+
+  if (error) throw error;
+}
