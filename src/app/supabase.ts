@@ -26,7 +26,7 @@ export async function capturePayment(paymentId: string, amount: number) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ paymentId, amount: Math.round(amount * 100) }),
   });
-  const result = await response.json() as { success?: boolean; error?: string };
+  const result = await response.json() as { success?: boolean; data?: { status?: string }; error?: string };
   if (!response.ok || !result.success) throw new Error(result.error ?? "Unable to capture payment.");
   return result;
 }
@@ -79,4 +79,17 @@ export async function getOrdersByUser(userId: string): Promise<Order[]> {
 
   if (error) throw error;
   return data ?? [];
+}
+
+export async function markOrderPaid(userId: string, orderId: string) {
+  const { data, error } = await supabase
+    .from("orders")
+    .update({ status: "paid" })
+    .eq("id", orderId)
+    .eq("user_id", userId)
+    .select("id, tracking_id, status, total_amount, created_at")
+    .single();
+
+  if (error) throw error;
+  return data;
 }

@@ -7,7 +7,7 @@ import giftGalleryOne from "./Images/4a.PNG";
 import { CookiePolicySection, OrdersShippingSection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
 import { BottleCarousel, CheckoutSection, CollectionPageWithBack, GiftSetPage, Hero, IntroStories, MomentSection, PricingSection, TrackBanner } from "./sections";
-import { capturePayment, createOrder, createPaymentOrder, getOrdersByUser, supabase } from "./supabase";
+import { capturePayment, createOrder, createPaymentOrder, getOrdersByUser, markOrderPaid, supabase } from "./supabase";
 
 declare global {
   interface Window {
@@ -295,6 +295,7 @@ export default function App() {
         handler: async (response: { razorpay_payment_id: string }) => {
           try {
             await capturePayment(response.razorpay_payment_id, Number(order.total_amount ?? 0));
+            await markOrderPaid(user.id, order.id);
             setPaymentOrder(current => current?.id === order.id ? { ...current, status: "paid" } : current);
             window.alert("Payment successful. Your order is confirmed.");
           } catch (error) {

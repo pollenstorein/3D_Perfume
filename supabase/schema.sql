@@ -35,3 +35,10 @@ drop policy if exists "Users can create own orders" on public.orders;
 create policy "Users can create own orders"
   on public.orders for insert
   with check (auth.uid() = user_id);
+
+drop policy if exists "Users can update own orders" on public.orders;
+
+create policy "Users can update own orders"
+  on public.orders for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);

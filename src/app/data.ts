@@ -10,6 +10,7 @@ export const NAV_ITEMS = [
   { label: "BUY NOW", href: "#fragrances" },
 ];
 
+// Payment testing: change the product `price` values below to 1 for a Rs 1 transaction, then restore them before release.
 export const FRAGRANCES = [
   {
     id: 1,
@@ -17,7 +18,7 @@ export const FRAGRANCES = [
     tagline: "Bold. Fierce. Unapologetic.",
     description: "A commanding fragrance that asserts presence before you enter the room. Warm woods, dark musk, and a spark of citrus that lingers all day.",
     notes: ["Dark Musk", "Cedarwood", "Bergamot"],
-    price: 499,
+    price: 1,
     img: pollen2,
   },
   {
