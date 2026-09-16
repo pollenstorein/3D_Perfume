@@ -691,7 +691,7 @@ export function GiftSetGallerySection({
           <h1 className="mt-3 text-3xl font-bold uppercase tracking-[0.08em] sm:text-4xl">
             The Gift Set
           </h1>
-          <p className="mt-2 text-lg font-semibold uppercase tracking-[0.08em]">(3 × 100ML)</p>
+          <p className="mt-2 text-lg font-semibold uppercase tracking-[0.08em]">(3 × 50ML)</p>
           <div className="mt-5 flex flex-wrap gap-2 text-[10px] uppercase">
             <span className="bg-black/10 px-3 py-1">Parfum</span>
             <span className="bg-black/10 px-3 py-1">Unisex</span>
@@ -879,7 +879,7 @@ export function PerfumeVariants({
               <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.06em]">
                 {variant.name}
               </p>
-              <p className="mt-1 text-[9px] uppercase tracking-[0.1em] text-black/55">(100ML)</p>
+              <p className="mt-1 text-[9px] uppercase tracking-[0.1em] text-black/55">(50ML)</p>
             </a>
           ))}
         </div>
@@ -1020,7 +1020,7 @@ export function PowerOfYouPage({
             <h1 className="mt-3 text-3xl font-bold uppercase tracking-[0.08em] sm:text-4xl">
               Power of You
             </h1>
-            <p className="mt-2 text-lg font-semibold uppercase tracking-[0.08em]">100 ML</p>
+            <p className="mt-2 text-lg font-semibold uppercase tracking-[0.08em]">50 ML</p>
             <div className="mt-5 flex flex-wrap gap-2 text-[10px] uppercase">
               <span className="bg-black/10 px-3 py-1">Parfum</span>
               <span className="bg-black/10 px-3 py-1">Unisex</span>
@@ -1228,7 +1228,7 @@ export function LostCherryPageWithRecommendations({
             <h1 className="mt-3 text-3xl font-bold uppercase tracking-[0.08em] sm:text-4xl">
               Lost Cherry
             </h1>
-            <p className="mt-2 text-lg font-semibold uppercase tracking-[0.08em]">100 ML</p>
+            <p className="mt-2 text-lg font-semibold uppercase tracking-[0.08em]">50 ML</p>
             <div className="mt-5 flex flex-wrap gap-2 text-[10px] uppercase">
               <span className="bg-black/10 px-3 py-1">Parfum</span>
               <span className="bg-black/10 px-3 py-1">Unisex</span>
@@ -1413,7 +1413,7 @@ export function FreshOrchidPageWithRecommendations({
             <h1 className="mt-3 text-3xl font-bold uppercase tracking-[0.08em] sm:text-4xl">
               Fresh Orchid
             </h1>
-            <p className="mt-2 text-lg font-semibold uppercase tracking-[0.08em]">100 ML</p>
+            <p className="mt-2 text-lg font-semibold uppercase tracking-[0.08em]">50 ML</p>
             <div className="mt-5 flex flex-wrap gap-2 text-[10px] uppercase">
               <span className="bg-black/10 px-3 py-1">Parfum</span>
               <span className="bg-black/10 px-3 py-1">Unisex</span>
@@ -1642,7 +1642,7 @@ export function CollectionPageUpdated({
                   {product.name}
                 </h2>
                 <p className="mt-2 text-xs uppercase tracking-[0.12em] text-black/50">
-                  100 ML per bottle
+                  50 ML per bottle
                 </p>
                 <div className="mt-3 flex items-center justify-center gap-3">
                   <p className="text-sm text-black/60">₹{product.price.toLocaleString()}</p>
