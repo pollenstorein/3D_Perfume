@@ -6,7 +6,7 @@ import { Footer } from "./footer";
 import giftGalleryOne from "./Images/4a.PNG";
 import { CookiePolicySection, OrdersShippingSection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
-import { BottleCarousel, CheckoutSection, CollectionPageWithBack, GiftSetPage, Hero, IntroStories, MomentSection, PowerOfYouPageWithRecommendations, PricingSection, TrackBanner } from "./sections";
+import { BottleCarousel, CheckoutSection, CollectionPageWithBack, FreshOrchidPageWithRecommendations, GiftSetPage, Hero, IntroStories, LostCherryPageWithRecommendations, MomentSection, PowerOfYouPageWithRecommendations, PricingSection, TrackBanner } from "./sections";
 import { capturePayment, createOrder, createPaymentOrder, deleteOrder, getOrdersByUser, markOrderPaid, supabase } from "./supabase";
 
 declare global {
@@ -19,13 +19,13 @@ const getPathname = () => {
   const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
   try {
     const rememberedRoute = sessionStorage.getItem("know-pollen-detail-route");
-    if (rememberedRoute === "/power-of-you" && (pathname === "/" || pathname === "/gift-set")) return rememberedRoute;
+    if ((rememberedRoute === "/power-of-you" || rememberedRoute === "/lost-cherry" || rememberedRoute === "/fresh-orchid") && (pathname === "/" || pathname === "/gift-set")) return rememberedRoute;
   } catch {
     // Session storage can be unavailable in privacy-restricted browsers.
   }
   return pathname;
 };
-const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => getPathname() === "/collection" ? <CollectionPageWithBack onAddToCart={item => window.dispatchEvent(new CustomEvent("collection-add-to-cart", { detail: item }))} /> : getPathname() === "/power-of-you" ? <PowerOfYouPageWithRecommendations onAddToCart={() => window.dispatchEvent(new CustomEvent("power-of-you-add-to-cart"))} onBack={props.onBack} /> : <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
+const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => getPathname() === "/collection" ? <CollectionPageWithBack onAddToCart={item => window.dispatchEvent(new CustomEvent("collection-add-to-cart", { detail: item }))} /> : getPathname() === "/power-of-you" ? <PowerOfYouPageWithRecommendations onAddToCart={() => window.dispatchEvent(new CustomEvent("power-of-you-add-to-cart"))} onBack={props.onBack} /> : getPathname() === "/lost-cherry" ? <LostCherryPageWithRecommendations onAddToCart={() => window.dispatchEvent(new CustomEvent("lost-cherry-add-to-cart"))} onBack={props.onBack} /> : getPathname() === "/fresh-orchid" ? <FreshOrchidPageWithRecommendations onAddToCart={() => window.dispatchEvent(new CustomEvent("fresh-orchid-add-to-cart"))} onBack={props.onBack} /> : <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
 
 const GLOBAL_STYLES = `
   html { scroll-behavior: smooth; overflow-x: hidden; }
@@ -78,7 +78,7 @@ export default function App() {
   const [authProvider, setAuthProvider] = useState("email");
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(() => window.location.pathname === "/checkout");
-  const [giftSetOpen, setGiftSetOpen] = useState(() => ["/gift-set", "/collection", "/power-of-you"].includes(getPathname()));
+  const [giftSetOpen, setGiftSetOpen] = useState(() => ["/gift-set", "/collection", "/power-of-you", "/lost-cherry", "/fresh-orchid"].includes(getPathname()));
   const [checkoutAfterLogin, setCheckoutAfterLogin] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -104,9 +104,13 @@ export default function App() {
   useEffect(() => {
     const handleCollectionAdd = (event: Event) => handleAddToCart((event as CustomEvent<{ id: number; name: string; img: string; price: number }>).detail);
     const handlePowerOfYouAdd = () => handleAddToCart({ ...FRAGRANCES[0], img: FRAGRANCES[0].img });
+    const handleLostCherryAdd = () => handleAddToCart({ ...FRAGRANCES[1], img: FRAGRANCES[1].img });
+    const handleFreshOrchidAdd = () => handleAddToCart({ ...FRAGRANCES[2], img: FRAGRANCES[2].img });
     window.addEventListener("collection-add-to-cart", handleCollectionAdd);
     window.addEventListener("power-of-you-add-to-cart", handlePowerOfYouAdd);
-    return () => { window.removeEventListener("collection-add-to-cart", handleCollectionAdd); window.removeEventListener("power-of-you-add-to-cart", handlePowerOfYouAdd); };
+    window.addEventListener("lost-cherry-add-to-cart", handleLostCherryAdd);
+    window.addEventListener("fresh-orchid-add-to-cart", handleFreshOrchidAdd);
+    return () => { window.removeEventListener("collection-add-to-cart", handleCollectionAdd); window.removeEventListener("power-of-you-add-to-cart", handlePowerOfYouAdd); window.removeEventListener("lost-cherry-add-to-cart", handleLostCherryAdd); window.removeEventListener("fresh-orchid-add-to-cart", handleFreshOrchidAdd); };
   }, []);
 
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
@@ -237,6 +241,8 @@ export default function App() {
   const handleOpenGiftSet = () => { sessionStorage.setItem("know-pollen-detail-route", "/gift-set"); setGiftSetOpen(true); window.history.pushState(null, "", "/gift-set"); window.scrollTo(0, 0); };
   const handleBackFromGiftSet = () => { sessionStorage.removeItem("know-pollen-detail-route"); setGiftSetOpen(false); window.history.pushState(null, "", "/"); window.scrollTo(0, 0); };
   const handleOpenPowerOfYou = () => { sessionStorage.setItem("know-pollen-detail-route", "/power-of-you"); setGiftSetOpen(true); window.history.pushState(null, "", "/power-of-you"); window.scrollTo(0, 0); };
+  const handleOpenLostCherry = () => { sessionStorage.setItem("know-pollen-detail-route", "/lost-cherry"); setGiftSetOpen(true); window.history.pushState(null, "", "/lost-cherry"); window.scrollTo(0, 0); };
+  const handleOpenFreshOrchid = () => { sessionStorage.setItem("know-pollen-detail-route", "/fresh-orchid"); setGiftSetOpen(true); window.history.pushState(null, "", "/fresh-orchid"); window.scrollTo(0, 0); };
   const handleOpenCart = () => setCartOpen(true);
   const handleAddToCart = (fragrance: { id: number; name: string; img: string; price: number }) => {
     const price = fragrance.id === 4 ? 1500 : fragrance.price;
@@ -377,7 +383,7 @@ export default function App() {
   return (
     <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}>
       <style>{GLOBAL_STYLES}</style>
-      <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} onOpenGiftSet={handleOpenGiftSet} onOpenFragrance={id => { if (id === 1) handleOpenPowerOfYou(); }} user={user} onLogin={() => openAuth("login")} onProfileSettings={() => setProfileSettingsOpen(true)} onSignOut={handleSignOut} onOpenOrderHistory={openOrderHistory} />
+      <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} onOpenGiftSet={handleOpenGiftSet} onOpenFragrance={id => { if (id === 1) handleOpenPowerOfYou(); if (id === 2) handleOpenLostCherry(); if (id === 3) handleOpenFreshOrchid(); }} user={user} onLogin={() => openAuth("login")} onProfileSettings={() => setProfileSettingsOpen(true)} onSignOut={handleSignOut} onOpenOrderHistory={openOrderHistory} />
       <TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open: boolean) => !open)} user={user} onBuyNow={handleBuyNow} cartCount={cartCount} onCartOpen={handleOpenCart} />
       <CartDrawer open={cartOpen} items={cartItems} onClose={() => setCartOpen(false)} onChangeQuantity={handleCartQuantity} onRemove={handleRemoveFromCart} onEmpty={handleEmptyCart} onCheckout={handleCheckout} />
       <AuthModal open={authOpen} mode={authMode} onClose={() => { setCheckoutAfterLogin(false); setAuthOpen(false); }} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} />
