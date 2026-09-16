@@ -15,7 +15,16 @@ declare global {
   }
 }
 
-const getPathname = () => window.location.pathname.replace(/\/+$/, "") || "/";
+const getPathname = () => {
+  const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
+  try {
+    const rememberedRoute = sessionStorage.getItem("know-pollen-detail-route");
+    if (rememberedRoute === "/power-of-you" && (pathname === "/" || pathname === "/gift-set")) return rememberedRoute;
+  } catch {
+    // Session storage can be unavailable in privacy-restricted browsers.
+  }
+  return pathname;
+};
 const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => getPathname() === "/collection" ? <CollectionPageWithBack onAddToCart={item => window.dispatchEvent(new CustomEvent("collection-add-to-cart", { detail: item }))} /> : getPathname() === "/power-of-you" ? <PowerOfYouPageWithRecommendations onAddToCart={() => window.dispatchEvent(new CustomEvent("power-of-you-add-to-cart"))} onBack={props.onBack} /> : <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
 
 const GLOBAL_STYLES = `
@@ -225,9 +234,9 @@ export default function App() {
     setAuthProvider("email");
   };
   const handleBuyNow = () => scrollToHash("#fragrances");
-  const handleOpenGiftSet = () => { setGiftSetOpen(true); window.history.pushState(null, "", "/gift-set"); window.scrollTo(0, 0); };
-  const handleBackFromGiftSet = () => { setGiftSetOpen(false); window.history.pushState(null, "", "/"); window.scrollTo(0, 0); };
-  const handleOpenPowerOfYou = () => { setGiftSetOpen(true); window.history.pushState(null, "", "/power-of-you"); window.scrollTo(0, 0); };
+  const handleOpenGiftSet = () => { sessionStorage.setItem("know-pollen-detail-route", "/gift-set"); setGiftSetOpen(true); window.history.pushState(null, "", "/gift-set"); window.scrollTo(0, 0); };
+  const handleBackFromGiftSet = () => { sessionStorage.removeItem("know-pollen-detail-route"); setGiftSetOpen(false); window.history.pushState(null, "", "/"); window.scrollTo(0, 0); };
+  const handleOpenPowerOfYou = () => { sessionStorage.setItem("know-pollen-detail-route", "/power-of-you"); setGiftSetOpen(true); window.history.pushState(null, "", "/power-of-you"); window.scrollTo(0, 0); };
   const handleOpenCart = () => setCartOpen(true);
   const handleAddToCart = (fragrance: { id: number; name: string; img: string; price: number }) => {
     const price = fragrance.id === 4 ? 1500 : fragrance.price;
