@@ -607,6 +607,12 @@ export default function App() {
       openAuth("login");
       return;
     }
+    setOrderHistoryOpen(true);
+    setGiftSetOpen(false);
+    setCheckoutOpen(false);
+    setPaymentOpen(false);
+    setMenuOpen(false);
+    window.history.pushState(null, "", "/orders");
     try {
       const orders = await getOrdersByUser(user.id ?? "");
       setOrderHistory(
@@ -617,9 +623,6 @@ export default function App() {
             : (order.customer_name ?? "Order"),
         })),
       );
-      setOrderHistoryOpen(true);
-      setMenuOpen(false);
-      window.history.pushState(null, "", "/orders");
     } catch (error) {
       window.alert(error instanceof Error ? error.message : "Unable to load your order history.");
     }
