@@ -22,8 +22,8 @@ import cherryGalleryFour from "./Images/3d.PNG";
 import storyThree from "./Images/3e.jpg";
 import giftSetHero, { default as giftGalleryOne, default as momentImage } from "./Images/4a.PNG";
 import collectionSecondImage, {
-  default as giftGalleryTwo,
-  default as giftSetDetailOne,
+    default as giftGalleryTwo,
+    default as giftSetDetailOne,
 } from "./Images/4b.PNG";
 import { default as giftGalleryThree, default as giftSetDetailTwo } from "./Images/4c.jpg";
 import giftGalleryFour from "./Images/4d.PNG";
@@ -845,7 +845,13 @@ const PERFUME_VARIANT_IMAGES: Record<string, string> = {
   "Fresh Orchid": carouselOne,
 };
 
-export function PerfumeVariants({ currentName }: { currentName: string }) {
+export function PerfumeVariants({
+  currentName,
+  onSelectVariant,
+}: {
+  currentName: string;
+  onSelectVariant?: (route: string) => void;
+}) {
   const variants = FRAGRANCES.filter((fragrance) => fragrance.name !== currentName);
   return (
     <section className="perfume-variant-picker bg-white px-5 pb-8 pt-2 md:px-0 md:pb-2 md:pt-0">
@@ -853,7 +859,16 @@ export function PerfumeVariants({ currentName }: { currentName: string }) {
         <h2 className="text-sm font-semibold uppercase tracking-[0.08em]">Choose variants</h2>
         <div className="mt-4 grid grid-cols-2 gap-3">
           {variants.map((variant) => (
-            <a key={variant.id} href={PERFUME_ROUTES[variant.name]} className="group text-center">
+            <a
+              key={variant.id}
+              href={PERFUME_ROUTES[variant.name]}
+              onClick={(event) => {
+                if (!onSelectVariant) return;
+                event.preventDefault();
+                onSelectVariant(PERFUME_ROUTES[variant.name]);
+              }}
+              className="group text-center"
+            >
               <div className="aspect-[0.86/1] overflow-hidden border border-black/20 bg-white">
                 <img
                   src={PERFUME_VARIANT_IMAGES[variant.name]}

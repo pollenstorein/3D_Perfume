@@ -5,36 +5,36 @@ import { FRAGRANCES } from "./data";
 import { Footer } from "./footer";
 import giftGalleryOne from "./Images/4a.PNG";
 import {
-  CookiePolicySection,
-  OrdersShippingSection,
-  PrivacyPolicySection,
-  RefundPolicySection,
-  TermsSection,
+    CookiePolicySection,
+    OrdersShippingSection,
+    PrivacyPolicySection,
+    RefundPolicySection,
+    TermsSection,
 } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
 import {
-  BottleCarousel,
-  CheckoutSection,
-  CollectionPageWithBack,
-  FreshOrchidPageWithRecommendations,
-  GiftSetPage,
-  Hero,
-  IntroStories,
-  LostCherryPageWithRecommendations,
-  MomentSection,
-  PerfumeVariants,
-  PowerOfYouPageWithRecommendations,
-  PricingSection,
-  TrackBanner,
+    BottleCarousel,
+    CheckoutSection,
+    CollectionPageWithBack,
+    FreshOrchidPageWithRecommendations,
+    GiftSetPage,
+    Hero,
+    IntroStories,
+    LostCherryPageWithRecommendations,
+    MomentSection,
+    PerfumeVariants,
+    PowerOfYouPageWithRecommendations,
+    PricingSection,
+    TrackBanner,
 } from "./sections";
 import {
-  capturePayment,
-  createOrder,
-  createPaymentOrder,
-  deleteOrder,
-  getOrdersByUser,
-  markOrderPaid,
-  supabase,
+    capturePayment,
+    createOrder,
+    createPaymentOrder,
+    deleteOrder,
+    getOrdersByUser,
+    markOrderPaid,
+    supabase,
 } from "./supabase";
 
 declare global {
@@ -59,14 +59,14 @@ const getPathname = () => {
   }
   return pathname;
 };
-const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void; quantities: { power: number; lost: number; fresh: number }; onChangeQuantity: (id: number, change: number) => void }) =>
-  getPathname() === "/collection" ? (
+const GiftSetGallerySection = (props: { route: string; onAddBundle: () => void; onBack: () => void; onSelectVariant: (route: string) => void; quantities: { power: number; lost: number; fresh: number }; onChangeQuantity: (id: number, change: number) => void }) =>
+  props.route === "/collection" ? (
     <CollectionPageWithBack
       onAddToCart={(item) =>
         window.dispatchEvent(new CustomEvent("collection-add-to-cart", { detail: item }))
       }
     />
-  ) : getPathname() === "/power-of-you" ? (
+  ) : props.route === "/power-of-you" ? (
     <div className="perfume-route">
       <PowerOfYouPageWithRecommendations
         onAddToCart={() => window.dispatchEvent(new CustomEvent("power-of-you-add-to-cart"))}
@@ -74,9 +74,9 @@ const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => v
         quantity={props.quantities.power}
         onChangeQuantity={(change) => props.onChangeQuantity(1, change)}
       />
-      <PerfumeVariants currentName="Power of You" />
+      <PerfumeVariants currentName="Power of You" onSelectVariant={props.onSelectVariant} />
     </div>
-  ) : getPathname() === "/lost-cherry" ? (
+  ) : props.route === "/lost-cherry" ? (
     <div className="perfume-route">
       <LostCherryPageWithRecommendations
         onAddToCart={() => window.dispatchEvent(new CustomEvent("lost-cherry-add-to-cart"))}
@@ -84,9 +84,9 @@ const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => v
         quantity={props.quantities.lost}
         onChangeQuantity={(change) => props.onChangeQuantity(2, change)}
       />
-      <PerfumeVariants currentName="Lost Cherry" />
+      <PerfumeVariants currentName="Lost Cherry" onSelectVariant={props.onSelectVariant} />
     </div>
-  ) : getPathname() === "/fresh-orchid" ? (
+  ) : props.route === "/fresh-orchid" ? (
     <div className="perfume-route">
       <FreshOrchidPageWithRecommendations
         onAddToCart={() => window.dispatchEvent(new CustomEvent("fresh-orchid-add-to-cart"))}
@@ -94,7 +94,7 @@ const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => v
         quantity={props.quantities.fresh}
         onChangeQuantity={(change) => props.onChangeQuantity(3, change)}
       />
-      <PerfumeVariants currentName="Fresh Orchid" />
+      <PerfumeVariants currentName="Fresh Orchid" onSelectVariant={props.onSelectVariant} />
     </div>
   ) : (
     <GiftSetPage
@@ -183,6 +183,7 @@ export default function App() {
       getPathname(),
     ),
   );
+  const [activeRoute, setActiveRoute] = useState(() => getPathname());
   const [checkoutAfterLogin, setCheckoutAfterLogin] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -414,6 +415,7 @@ export default function App() {
   const handleBuyNow = () => handleOpenPowerOfYou();
   const handleOpenHome = () => {
     sessionStorage.removeItem("know-pollen-detail-route");
+    setActiveRoute("/");
     setGiftSetOpen(false);
     setCheckoutOpen(false);
     setPaymentOpen(false);
@@ -424,33 +426,43 @@ export default function App() {
   };
   const handleOpenGiftSet = () => {
     sessionStorage.setItem("know-pollen-detail-route", "/gift-set");
+    setActiveRoute("/gift-set");
     setGiftSetOpen(true);
     window.history.pushState(null, "", "/gift-set");
     window.scrollTo(0, 0);
   };
   const handleBackFromGiftSet = () => {
     sessionStorage.removeItem("know-pollen-detail-route");
+    setActiveRoute("/");
     setGiftSetOpen(false);
     window.history.pushState(null, "", "/");
     window.scrollTo(0, 0);
   };
   const handleOpenPowerOfYou = () => {
     sessionStorage.setItem("know-pollen-detail-route", "/power-of-you");
+    setActiveRoute("/power-of-you");
     setGiftSetOpen(true);
     window.history.pushState(null, "", "/power-of-you");
     window.scrollTo(0, 0);
   };
   const handleOpenLostCherry = () => {
     sessionStorage.setItem("know-pollen-detail-route", "/lost-cherry");
+    setActiveRoute("/lost-cherry");
     setGiftSetOpen(true);
     window.history.pushState(null, "", "/lost-cherry");
     window.scrollTo(0, 0);
   };
   const handleOpenFreshOrchid = () => {
     sessionStorage.setItem("know-pollen-detail-route", "/fresh-orchid");
+    setActiveRoute("/fresh-orchid");
     setGiftSetOpen(true);
     window.history.pushState(null, "", "/fresh-orchid");
     window.scrollTo(0, 0);
+  };
+  const handleOpenPerfumeRoute = (route: string) => {
+    if (route === "/power-of-you") return handleOpenPowerOfYou();
+    if (route === "/lost-cherry") return handleOpenLostCherry();
+    if (route === "/fresh-orchid") return handleOpenFreshOrchid();
   };
   const handleOpenCart = () => setCartOpen(true);
   const handleAddToCart = (fragrance: { id: number; name: string; img: string; price: number }) => {
@@ -705,10 +717,12 @@ export default function App() {
           legalPage
         ) : giftSetOpen ? (
           <GiftSetGallerySection
+            route={activeRoute}
             onAddBundle={() =>
               handleAddToCart({ id: 4, name: "The Legacy Set", img: giftGalleryOne, price: 999 })
             }
             onBack={handleBackFromGiftSet}
+            onSelectVariant={handleOpenPerfumeRoute}
             quantities={{
               power: cartItems.find((item) => item.id === 1)?.quantity ?? 0,
               lost: cartItems.find((item) => item.id === 2)?.quantity ?? 0,
