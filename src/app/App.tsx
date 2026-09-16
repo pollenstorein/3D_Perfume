@@ -6,7 +6,7 @@ import { Footer } from "./footer";
 import giftGalleryOne from "./Images/4a.PNG";
 import { CookiePolicySection, OrdersShippingSection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
-import { BottleCarousel, CheckoutSection, CollectionPageWithBack, GiftSetPage, Hero, IntroStories, MomentSection, PricingSection, TrackBanner } from "./sections";
+import { BottleCarousel, CheckoutSection, CollectionPageWithBack, GiftSetPage, Hero, IntroStories, MomentSection, PowerOfYouPage, PricingSection, TrackBanner } from "./sections";
 import { capturePayment, createOrder, createPaymentOrder, deleteOrder, getOrdersByUser, markOrderPaid, supabase } from "./supabase";
 
 declare global {
@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => window.location.pathname === "/collection" ? <CollectionPageWithBack onAddToCart={item => window.dispatchEvent(new CustomEvent("collection-add-to-cart", { detail: item }))} /> : <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
+const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => window.location.pathname === "/collection" ? <CollectionPageWithBack onAddToCart={item => window.dispatchEvent(new CustomEvent("collection-add-to-cart", { detail: item }))} /> : window.location.pathname === "/power-of-you" ? <PowerOfYouPage onAddToCart={() => window.dispatchEvent(new CustomEvent("power-of-you-add-to-cart"))} onBack={props.onBack} /> : <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
 
 const GLOBAL_STYLES = `
   html { scroll-behavior: smooth; overflow-x: hidden; }
@@ -68,7 +68,7 @@ export default function App() {
   const [authProvider, setAuthProvider] = useState("email");
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(() => window.location.pathname === "/checkout");
-  const [giftSetOpen, setGiftSetOpen] = useState(() => window.location.pathname === "/gift-set" || window.location.pathname === "/collection");
+  const [giftSetOpen, setGiftSetOpen] = useState(() => window.location.pathname === "/gift-set" || window.location.pathname === "/collection" || window.location.pathname === "/power-of-you");
   const [checkoutAfterLogin, setCheckoutAfterLogin] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -92,8 +92,10 @@ export default function App() {
 
   useEffect(() => {
     const handleCollectionAdd = (event: Event) => handleAddToCart((event as CustomEvent<{ id: number; name: string; img: string; price: number }>).detail);
+    const handlePowerOfYouAdd = () => handleAddToCart({ ...FRAGRANCES[0], img: FRAGRANCES[0].img });
     window.addEventListener("collection-add-to-cart", handleCollectionAdd);
-    return () => window.removeEventListener("collection-add-to-cart", handleCollectionAdd);
+    window.addEventListener("power-of-you-add-to-cart", handlePowerOfYouAdd);
+    return () => { window.removeEventListener("collection-add-to-cart", handleCollectionAdd); window.removeEventListener("power-of-you-add-to-cart", handlePowerOfYouAdd); };
   }, []);
 
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
@@ -223,6 +225,7 @@ export default function App() {
   const handleBuyNow = () => scrollToHash("#fragrances");
   const handleOpenGiftSet = () => { setGiftSetOpen(true); window.history.pushState(null, "", "/gift-set"); window.scrollTo(0, 0); };
   const handleBackFromGiftSet = () => { setGiftSetOpen(false); window.history.pushState(null, "", "/"); window.scrollTo(0, 0); };
+  const handleOpenPowerOfYou = () => { setGiftSetOpen(true); window.history.pushState(null, "", "/power-of-you"); window.scrollTo(0, 0); };
   const handleOpenCart = () => setCartOpen(true);
   const handleAddToCart = (fragrance: { id: number; name: string; img: string; price: number }) => {
     const price = fragrance.id === 4 ? 1500 : fragrance.price;
@@ -363,7 +366,7 @@ export default function App() {
   return (
     <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", background: "#fff", minHeight: "100vh", color: "#0a0a0a", overflowX: "hidden" }}>
       <style>{GLOBAL_STYLES}</style>
-      <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} onOpenGiftSet={handleOpenGiftSet} user={user} onLogin={() => openAuth("login")} onProfileSettings={() => setProfileSettingsOpen(true)} onSignOut={handleSignOut} onOpenOrderHistory={openOrderHistory} />
+      <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} onBuyNow={handleBuyNow} onOpenGiftSet={handleOpenGiftSet} onOpenFragrance={id => { if (id === 1) handleOpenPowerOfYou(); }} user={user} onLogin={() => openAuth("login")} onProfileSettings={() => setProfileSettingsOpen(true)} onSignOut={handleSignOut} onOpenOrderHistory={openOrderHistory} />
       <TopBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open: boolean) => !open)} user={user} onBuyNow={handleBuyNow} cartCount={cartCount} onCartOpen={handleOpenCart} />
       <CartDrawer open={cartOpen} items={cartItems} onClose={() => setCartOpen(false)} onChangeQuantity={handleCartQuantity} onRemove={handleRemoveFromCart} onEmpty={handleEmptyCart} onCheckout={handleCheckout} />
       <AuthModal open={authOpen} mode={authMode} onClose={() => { setCheckoutAfterLogin(false); setAuthOpen(false); }} onSubmit={handleAuthSubmit} onGoogleSignIn={handleGoogleSignIn} onModeChange={setAuthMode} user={user} />
