@@ -15,7 +15,8 @@ declare global {
   }
 }
 
-const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => window.location.pathname === "/collection" ? <CollectionPageWithBack onAddToCart={item => window.dispatchEvent(new CustomEvent("collection-add-to-cart", { detail: item }))} /> : window.location.pathname === "/power-of-you" ? <PowerOfYouPageWithRecommendations onAddToCart={() => window.dispatchEvent(new CustomEvent("power-of-you-add-to-cart"))} onBack={props.onBack} /> : <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
+const getPathname = () => window.location.pathname.replace(/\/+$/, "") || "/";
+const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => getPathname() === "/collection" ? <CollectionPageWithBack onAddToCart={item => window.dispatchEvent(new CustomEvent("collection-add-to-cart", { detail: item }))} /> : getPathname() === "/power-of-you" ? <PowerOfYouPageWithRecommendations onAddToCart={() => window.dispatchEvent(new CustomEvent("power-of-you-add-to-cart"))} onBack={props.onBack} /> : <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
 
 const GLOBAL_STYLES = `
   html { scroll-behavior: smooth; overflow-x: hidden; }
@@ -68,7 +69,7 @@ export default function App() {
   const [authProvider, setAuthProvider] = useState("email");
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(() => window.location.pathname === "/checkout");
-  const [giftSetOpen, setGiftSetOpen] = useState(() => window.location.pathname === "/gift-set" || window.location.pathname === "/collection" || window.location.pathname === "/power-of-you");
+  const [giftSetOpen, setGiftSetOpen] = useState(() => ["/gift-set", "/collection", "/power-of-you"].includes(getPathname()));
   const [checkoutAfterLogin, setCheckoutAfterLogin] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
