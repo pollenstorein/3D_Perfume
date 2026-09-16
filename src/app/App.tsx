@@ -266,6 +266,16 @@ export default function App() {
   };
   const handlePayNow = async (order = paymentOrder) => {
     if (!order || !user) return;
+    const returnHome = () => {
+      setPaymentOpen(false);
+      setPaymentOrder(null);
+      window.history.pushState(null, "", "/");
+      window.scrollTo(0, 0);
+    };
+    const showPaymentFailure = (message = "Payment failed. Please try again.") => {
+      returnHome();
+      window.alert(message);
+    };
     const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
     if (!razorpayKey || razorpayKey.includes("your_")) {
       window.alert("Razorpay is not configured. Add VITE_RAZORPAY_KEY_ID in Vercel Environment Variables and redeploy the client.");
@@ -298,10 +308,14 @@ export default function App() {
             await markOrderPaid(user.id, order.id);
             setPaymentOrder(current => current?.id === order.id ? { ...current, status: "paid" } : current);
             window.alert("Payment successful. Your order is confirmed.");
+            returnHome();
           } catch (error) {
-            window.alert(error instanceof Error ? error.message : "Payment was received but confirmation failed.");
+            showPaymentFailure(error instanceof Error ? error.message : "Payment failed. Please try again.");
           }
         },
+      });
+      razorpay.on("payment.failed", (response: { error?: { description?: string } }) => {
+        showPaymentFailure(response.error?.description ?? "Payment failed. Please try again.");
       });
       razorpay.open();
     } catch (error) {
