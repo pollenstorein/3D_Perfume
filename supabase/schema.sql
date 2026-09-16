@@ -1,11 +1,15 @@
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade not null,
+  customer_name text,
   tracking_id text unique not null,
   status text default 'pending',
   total_amount numeric(10, 2),
   created_at timestamptz default timezone('utc'::text, now()) not null
 );
+
+alter table public.orders
+  add column if not exists customer_name text;
 
 -- Repair an existing orders table after removing the profiles table.
 do $$

@@ -34,6 +34,7 @@ export async function capturePayment(paymentId: string, amount: number) {
 export type Order = {
   id: string;
   tracking_id: string;
+  customer_name: string | null;
   status: string;
   total_amount: number | null;
   created_at: string;
@@ -42,7 +43,7 @@ export type Order = {
 export async function getOrderByTrackingId(userId: string, trackingId: string): Promise<Order | null> {
   const { data, error } = await supabase
     .from("orders")
-    .select("id, tracking_id, status, total_amount, created_at")
+    .select("id, tracking_id, customer_name, status, total_amount, created_at")
     .eq("user_id", userId)
     .eq("tracking_id", trackingId)
     .maybeSingle();
@@ -50,7 +51,7 @@ export async function getOrderByTrackingId(userId: string, trackingId: string): 
   return data;
 }
 
-export async function createOrder(userId: string, totalAmount: number) {
+export async function createOrder(userId: string, totalAmount: number, customerName: string) {
   if (!userId) throw new Error("You must be signed in before placing an order.");
 
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -62,10 +63,11 @@ export async function createOrder(userId: string, totalAmount: number) {
   const trackingId = `KP-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const { data, error } = await supabase.from("orders").insert({
     user_id: userId,
+    customer_name: customerName.trim() || null,
     tracking_id: trackingId,
     status: "pending",
     total_amount: totalAmount,
-  }).select("id, tracking_id, status, total_amount, created_at").single();
+  }).select("id, tracking_id, customer_name, status, total_amount, created_at").single();
   if (error) throw error;
   return data;
 }
@@ -73,7 +75,7 @@ export async function createOrder(userId: string, totalAmount: number) {
 export async function getOrdersByUser(userId: string): Promise<Order[]> {
   const { data, error } = await supabase
     .from("orders")
-    .select("id, tracking_id, status, total_amount, created_at")
+    .select("id, tracking_id, customer_name, status, total_amount, created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
@@ -87,7 +89,7 @@ export async function markOrderPaid(userId: string, orderId: string) {
     .update({ status: "paid" })
     .eq("id", orderId)
     .eq("user_id", userId)
-    .select("id, tracking_id, status, total_amount, created_at")
+    .select("id, tracking_id, customer_name, status, total_amount, created_at")
     .single();
 
   if (error) throw error;

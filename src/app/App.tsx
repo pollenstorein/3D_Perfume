@@ -201,6 +201,7 @@ export default function App() {
     if (checkoutAfterLogin) {
       setCheckoutAfterLogin(false);
       setCartOpen(false);
+      setGiftSetOpen(false);
       setCheckoutOpen(true);
       window.history.pushState(null, "", "/checkout");
     } else returnToHome();
@@ -229,10 +230,6 @@ export default function App() {
       ? cartItems.map(item => item.id === fragrance.id ? { ...item, price, quantity: item.quantity + 1 } : item)
       : [...cartItems, { id: fragrance.id, name: fragrance.name, img: fragrance.img, price, quantity: 1 }];
     setCartItems(nextCartItems);
-    if (fragrance.id === 4) {
-      handleCheckout(nextCartItems);
-      return;
-    }
   };
   const handleCartQuantity = (id: number, change: number) => setCartItems(items => items.flatMap(item => item.id === id ? [{ ...item, quantity: item.quantity + change }].filter(updated => updated.quantity > 0) : [item]));
   const handleRemoveFromCart = (id: number) => setCartItems(items => items.filter(item => item.id !== id));
@@ -244,6 +241,7 @@ export default function App() {
       return openAuth("login");
     }
     setCartOpen(false);
+    setGiftSetOpen(false);
     setCheckoutOpen(true);
     window.history.pushState(null, "", "/checkout");
   };
@@ -251,7 +249,7 @@ export default function App() {
     if (!user || cartItems.length === 0) return;
     const totalAmount = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     try {
-      const order = await createOrder(user.id ?? "", totalAmount);
+      const order = await createOrder(user.id ?? "", totalAmount, user.name);
       const titles = cartItems.map(item => item.name).join(", ");
       const createdOrder = {
         ...order,
@@ -341,7 +339,7 @@ export default function App() {
     if (!user) { openAuth("login"); return; }
     try {
       const orders = await getOrdersByUser(user.id ?? "");
-      setOrderHistory(orders.map(order => ({ ...order, title: order.total_amount ? `Order for ${order.tracking_id}` : "Order" })));
+      setOrderHistory(orders.map(order => ({ ...order, title: order.total_amount ? `${order.customer_name ?? "Customer"} · Order for ${order.tracking_id}` : order.customer_name ?? "Order" })));
       setOrderHistoryOpen(true);
       setMenuOpen(false);
       window.history.pushState(null, "", "/orders");
