@@ -6,7 +6,7 @@ import { Footer } from "./footer";
 import giftGalleryOne from "./Images/4a.PNG";
 import { CookiePolicySection, OrdersShippingSection, PrivacyPolicySection, RefundPolicySection, TermsSection } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
-import { BottleCarousel, CheckoutSection, CollectionPageWithBack, GiftSetPage, Hero, IntroStories, MomentSection, PowerOfYouPage, PricingSection, TrackBanner } from "./sections";
+import { BottleCarousel, CheckoutSection, CollectionPageWithBack, GiftSetPage, Hero, IntroStories, MomentSection, PowerOfYouPageWithRecommendations, PricingSection, TrackBanner } from "./sections";
 import { capturePayment, createOrder, createPaymentOrder, deleteOrder, getOrdersByUser, markOrderPaid, supabase } from "./supabase";
 
 declare global {
@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => window.location.pathname === "/collection" ? <CollectionPageWithBack onAddToCart={item => window.dispatchEvent(new CustomEvent("collection-add-to-cart", { detail: item }))} /> : window.location.pathname === "/power-of-you" ? <PowerOfYouPage onAddToCart={() => window.dispatchEvent(new CustomEvent("power-of-you-add-to-cart"))} onBack={props.onBack} /> : <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
+const GiftSetGallerySection = (props: { onAddBundle: () => void; onBack: () => void }) => window.location.pathname === "/collection" ? <CollectionPageWithBack onAddToCart={item => window.dispatchEvent(new CustomEvent("collection-add-to-cart", { detail: item }))} /> : window.location.pathname === "/power-of-you" ? <PowerOfYouPageWithRecommendations onAddToCart={() => window.dispatchEvent(new CustomEvent("power-of-you-add-to-cart"))} onBack={props.onBack} /> : <GiftSetPage {...props} onOpenPrivacy={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "privacy" }))} onOpenTerms={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "terms" }))} onOpenRefund={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "refund" }))} onOpenCookies={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "cookies" }))} onOpenOrdersShipping={() => window.dispatchEvent(new CustomEvent("open-policy", { detail: "orders" }))} />;
 
 const GLOBAL_STYLES = `
   html { scroll-behavior: smooth; overflow-x: hidden; }
@@ -87,6 +87,7 @@ export default function App() {
       if (policy === "refund") setRefundOpen(true);
       if (policy === "cookies") setCookiesOpen(true);
     };
+      window.addEventListener("open-policy", handlePolicyNavigation);
     return () => window.removeEventListener("open-policy", handlePolicyNavigation);
   }, []);
 
