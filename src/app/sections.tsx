@@ -9,21 +9,21 @@ import storyOne from "./Images/1c.jpg";
 import orchidGalleryFour from "./Images/1d.PNG";
 import orchidGalleryFive from "./Images/1e.PNG";
 import carouselTwo from "./Images/2a bg.png";
-import powerGalleryOne from "./Images/2a.PNG";
+import powerGalleryOne from "./Images/2d.PNG";
 import powerGalleryTwo from "./Images/2b.png";
 import powerGalleryThree from "./Images/2c.PNG";
-import powerGalleryFour from "./Images/2d.PNG";
+import powerGalleryFour from "./Images/2a.PNG";
 import { default as powerGalleryFive, default as storyTwo } from "./Images/2e.jpg";
 import carouselThree from "./Images/3a bg.png";
-import cherryGalleryOne from "./Images/3a.PNG";
-import cherryGalleryTwo from "./Images/3b.PNG";
+import storyThree from "./Images/3a.png";
+import cherryGalleryOne from "./Images/3b.png"; //Replacing 3a.PNG with 3b.PNG
 import cherryGalleryThree from "./Images/3c.PNG";
-import cherryGalleryFour from "./Images/3d.PNG";
-import storyThree from "./Images/3e.jpg";
+import cherryGalleryTwo from "./Images/3d.PNG";
+import cherryGalleryFour from "./Images/3e.jpg";
 import giftSetHero, { default as giftGalleryOne, default as momentImage } from "./Images/4a.PNG";
 import collectionSecondImage, {
-    default as giftGalleryTwo,
-    default as giftSetDetailOne,
+  default as giftGalleryTwo,
+  default as giftSetDetailOne,
 } from "./Images/4b.PNG";
 import { default as giftGalleryThree, default as giftSetDetailTwo } from "./Images/4c.jpg";
 import giftGalleryFour from "./Images/4d.PNG";
@@ -1126,6 +1126,7 @@ const LOST_CHERRY_GALLERY = [
   { image: cherryGalleryFour, alt: "Lost Cherry lifestyle" },
   { image: storyThree, alt: "Lost Cherry fragrance bottle" },
 ];
+const LOST_CHERRY_GALLERY_MOBILE = LOST_CHERRY_GALLERY.slice(0, -1);
 
 export function LostCherryPageWithRecommendations({
   onAddToCart,
@@ -1142,7 +1143,7 @@ export function LostCherryPageWithRecommendations({
   const touchStartX = useRef<number | null>(null);
   const changeImage = (direction: number) =>
     setActiveImage(
-      (index) => (index + direction + LOST_CHERRY_GALLERY.length) % LOST_CHERRY_GALLERY.length,
+      (index) => (index + direction + LOST_CHERRY_GALLERY_MOBILE.length) % LOST_CHERRY_GALLERY_MOBILE.length,
     );
   const recommendations = [
     { image: storyOne, name: "Fresh Orchid", href: "/fresh-orchid" },
@@ -1167,8 +1168,8 @@ export function LostCherryPageWithRecommendations({
               }}
             >
               <img
-                src={LOST_CHERRY_GALLERY[activeImage].image}
-                alt={LOST_CHERRY_GALLERY[activeImage].alt}
+                src={LOST_CHERRY_GALLERY_MOBILE[activeImage].image}
+                alt={LOST_CHERRY_GALLERY_MOBILE[activeImage].alt}
                 className="aspect-[0.86/1] h-full w-full object-cover"
               />
               <button
@@ -1188,7 +1189,7 @@ export function LostCherryPageWithRecommendations({
                 <ArrowRight size={16} />
               </button>
               <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-                {LOST_CHERRY_GALLERY.map((item, index) => (
+                {LOST_CHERRY_GALLERY_MOBILE.map((item, index) => (
                   <button
                     key={item.image}
                     type="button"
@@ -1311,6 +1312,9 @@ const FRESH_ORCHID_GALLERY = [
   { image: orchidGalleryFour, alt: "Fresh Orchid lifestyle" },
   { image: orchidGalleryFive, alt: "Fresh Orchid fragrance bottle" },
 ];
+const FRESH_ORCHID_MOBILE_GALLERY = FRESH_ORCHID_GALLERY.filter(
+  (item) => item.image !== orchidGalleryTwo,
+);
 
 export function FreshOrchidPageWithRecommendations({
   onAddToCart,
@@ -1327,7 +1331,9 @@ export function FreshOrchidPageWithRecommendations({
   const touchStartX = useRef<number | null>(null);
   const changeImage = (direction: number) =>
     setActiveImage(
-      (index) => (index + direction + FRESH_ORCHID_GALLERY.length) % FRESH_ORCHID_GALLERY.length,
+      (index) =>
+        (index + direction + FRESH_ORCHID_MOBILE_GALLERY.length) %
+        FRESH_ORCHID_MOBILE_GALLERY.length,
     );
   const recommendations = [
     { image: powerGalleryOne, name: "Power of You", href: "/power-of-you" },
@@ -1352,8 +1358,8 @@ export function FreshOrchidPageWithRecommendations({
               }}
             >
               <img
-                src={FRESH_ORCHID_GALLERY[activeImage].image}
-                alt={FRESH_ORCHID_GALLERY[activeImage].alt}
+                src={FRESH_ORCHID_MOBILE_GALLERY[activeImage].image}
+                alt={FRESH_ORCHID_MOBILE_GALLERY[activeImage].alt}
                 className="aspect-[0.86/1] h-full w-full object-cover"
               />
               <button
@@ -1373,7 +1379,7 @@ export function FreshOrchidPageWithRecommendations({
                 <ArrowRight size={16} />
               </button>
               <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-                {FRESH_ORCHID_GALLERY.map((item, index) => (
+                {FRESH_ORCHID_MOBILE_GALLERY.map((item, index) => (
                   <button
                     key={item.image}
                     type="button"

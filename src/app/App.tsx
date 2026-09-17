@@ -137,7 +137,7 @@ const GLOBAL_STYLES = `
   ::selection { background: rgba(0,0,0,0.12); }
   #fragrances > div:nth-child(2) article > div:first-child { background: #fff; }
   #fragrances > div:nth-child(2) article > div:first-child img { object-fit: contain; mix-blend-mode: multiply; }
-  .bottle-stage-panel { background-position: center bottom; background-size: auto 125%; }
+  .bottle-stage-panel { background-position: center calc(100% - 64px); background-size: auto 100%; }
   @media (min-width: 768px) {
     .bottle-stage-panel { background-position: center bottom; background-size: auto 100%; }
     .hidden.grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
