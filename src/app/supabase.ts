@@ -35,15 +35,34 @@ export type Order = {
   id: string;
   tracking_id: string;
   customer_name: string | null;
+  delivery_phone: string | null;
+  delivery_address: string | null;
   status: string;
   total_amount: number | null;
   created_at: string;
 };
 
+export type SavedAddress = {
+  id: string;
+  label: string;
+  full_name: string;
+  phone: string;
+  address_line1: string;
+  address_line2: string | null;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+  created_at: string;
+};
+
+const ORDER_COLUMNS =
+  "id, tracking_id, customer_name, delivery_phone, delivery_address, status, total_amount, created_at";
+
 export async function getOrderByTrackingId(userId: string, trackingId: string): Promise<Order | null> {
   const { data, error } = await supabase
     .from("orders")
-    .select("id, tracking_id, customer_name, status, total_amount, created_at")
+    .select(ORDER_COLUMNS)
     .eq("user_id", userId)
     .eq("tracking_id", trackingId)
     .maybeSingle();
@@ -51,7 +70,12 @@ export async function getOrderByTrackingId(userId: string, trackingId: string): 
   return data;
 }
 
-export async function createOrder(userId: string, totalAmount: number, customerName: string) {
+export async function createOrder(
+  userId: string,
+  totalAmount: number,
+  customerName: string,
+  address: SavedAddress,
+) {
   if (!userId) throw new Error("You must be signed in before placing an order.");
 
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -61,13 +85,26 @@ export async function createOrder(userId: string, totalAmount: number, customerN
   }
 
   const trackingId = `KP-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+  const deliveryAddress = [
+    address.address_line1,
+    address.address_line2,
+    address.city,
+    address.state,
+    address.postal_code,
+    address.country,
+  ]
+    .filter(Boolean)
+    .join(", ");
   const { data, error } = await supabase.from("orders").insert({
     user_id: userId,
     customer_name: customerName.trim() || null,
+    address_id: address.id,
+    delivery_phone: address.phone,
+    delivery_address: deliveryAddress,
     tracking_id: trackingId,
     status: "pending",
     total_amount: totalAmount,
-  }).select("id, tracking_id, customer_name, status, total_amount, created_at").single();
+  }).select(ORDER_COLUMNS).single();
   if (error) throw error;
   return data;
 }
@@ -75,7 +112,7 @@ export async function createOrder(userId: string, totalAmount: number, customerN
 export async function getOrdersByUser(userId: string): Promise<Order[]> {
   const { data, error } = await supabase
     .from("orders")
-    .select("id, tracking_id, customer_name, status, total_amount, created_at")
+    .select(ORDER_COLUMNS)
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
@@ -89,9 +126,32 @@ export async function markOrderPaid(userId: string, orderId: string) {
     .update({ status: "paid" })
     .eq("id", orderId)
     .eq("user_id", userId)
-    .select("id, tracking_id, customer_name, status, total_amount, created_at")
+    .select(ORDER_COLUMNS)
     .single();
 
+  if (error) throw error;
+  return data;
+}
+
+export async function getSavedAddresses(userId: string): Promise<SavedAddress[]> {
+  const { data, error } = await supabase
+    .from("user_addresses")
+    .select("id, label, full_name, phone, address_line1, address_line2, city, state, postal_code, country, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function createSavedAddress(
+  userId: string,
+  address: Omit<SavedAddress, "id" | "created_at">,
+): Promise<SavedAddress> {
+  const { data, error } = await supabase
+    .from("user_addresses")
+    .insert({ user_id: userId, ...address })
+    .select("id, label, full_name, phone, address_line1, address_line2, city, state, postal_code, country, created_at")
+    .single();
   if (error) throw error;
   return data;
 }

@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, Volume2, VolumeX } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { FRAGRANCES } from "./data";
 import { Footer } from "./footer";
 import carouselOne from "./Images/1a bg.png";
@@ -9,14 +9,14 @@ import storyOne from "./Images/1c.jpg";
 import orchidGalleryFour from "./Images/1d.PNG";
 import orchidGalleryFive from "./Images/1e.PNG";
 import carouselTwo from "./Images/2a bg.png";
-import powerGalleryOne from "./Images/2d.PNG";
+import powerGalleryFour from "./Images/2a.PNG";
 import powerGalleryTwo from "./Images/2b.png";
 import powerGalleryThree from "./Images/2c.PNG";
-import powerGalleryFour from "./Images/2a.PNG";
+import powerGalleryOne from "./Images/2d.PNG";
 import { default as powerGalleryFive, default as storyTwo } from "./Images/2e.jpg";
 import carouselThree from "./Images/3a bg.png";
 import storyThree from "./Images/3a.png";
-import cherryGalleryOne from "./Images/3b.png"; //Replacing 3a.PNG with 3b.PNG
+import cherryGalleryOne from "./Images/3b.png";
 import cherryGalleryThree from "./Images/3c.PNG";
 import cherryGalleryTwo from "./Images/3d.PNG";
 import cherryGalleryFour from "./Images/3e.jpg";
@@ -29,6 +29,7 @@ import { default as giftGalleryThree, default as giftSetDetailTwo } from "./Imag
 import giftGalleryFour from "./Images/4d.PNG";
 import giftGalleryFive from "./Images/4e.PNG";
 import introVideo from "./Images/intro.mp4";
+import type { SavedAddress } from "./supabase";
 import { getOrderByTrackingId } from "./supabase";
 
 export function Hero() {
@@ -1759,6 +1760,10 @@ export function CheckoutSection({
   items,
   onBack,
   onPlaceOrder,
+  addresses,
+  selectedAddressId,
+  onSelectAddress,
+  onSaveAddress,
 }: {
   items: {
     id: number;
@@ -1768,9 +1773,50 @@ export function CheckoutSection({
     quantity: number;
   }[];
   onBack: () => void;
-  onPlaceOrder: () => void;
+  onPlaceOrder: (address: SavedAddress) => void;
+  addresses: SavedAddress[];
+  selectedAddressId: string | null;
+  onSelectAddress: (addressId: string) => void;
+  onSaveAddress: (address: Omit<SavedAddress, "id" | "created_at">) => Promise<SavedAddress>;
 }) {
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const [showNewAddress, setShowNewAddress] = useState(addresses.length === 0);
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [addressError, setAddressError] = useState("");
+  const [form, setForm] = useState({
+    label: "Home",
+    full_name: "",
+    phone: "",
+    address_line1: "",
+    address_line2: "",
+    city: "",
+    state: "",
+    postal_code: "",
+    country: "India",
+  });
+  const updateField = (field: keyof typeof form, value: string) =>
+    setForm((current) => ({ ...current, [field]: value }));
+  const saveAddress = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAddressError("");
+    if (Object.entries(form).some(([key, value]) => key !== "address_line2" && !value.trim())) {
+      setAddressError("Please complete all required address fields.");
+      return;
+    }
+    setSavingAddress(true);
+    try {
+      const saved = await onSaveAddress(form);
+      onSelectAddress(saved.id);
+      setShowNewAddress(false);
+      onPlaceOrder(saved);
+    } catch (error) {
+      setAddressError(error instanceof Error ? error.message : "Unable to save this address.");
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+  const selectedAddress = addresses.find((address) => address.id === selectedAddressId);
+  const fieldClass = "w-full border border-black/10 bg-white px-3 py-3 text-sm outline-none focus:border-black";
   return (
     <section className="min-h-screen bg-white px-6 pb-24 pt-32 md:px-16">
       <div className="mx-auto max-w-screen-xl">
@@ -1805,12 +1851,57 @@ export function CheckoutSection({
               <span className="text-xs uppercase tracking-[0.2em] text-black/50">Total</span>
               <span className="text-2xl font-bold">₹{total.toLocaleString()}</span>
             </div>
+            <div className="mt-8">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/50">Delivery address</p>
+                  <p className="mt-1 text-xs text-black/50">Choose where we should deliver your order.</p>
+                </div>
+                {addresses.length > 0 && !showNewAddress && (
+                  <button type="button" onClick={() => setShowNewAddress(true)} className="text-[10px] font-bold uppercase tracking-[0.12em] underline">Change address</button>
+                )}
+              </div>
+              {showNewAddress ? (
+                <form onSubmit={saveAddress} className="mt-5 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <input required value={form.label} onChange={(event) => updateField("label", event.target.value)} className={fieldClass} placeholder="Label (Home)" />
+                    <input required value={form.full_name} onChange={(event) => updateField("full_name", event.target.value)} className={fieldClass} placeholder="Full name" />
+                  </div>
+                  <input required type="tel" value={form.phone} onChange={(event) => updateField("phone", event.target.value)} className={fieldClass} placeholder="Phone number" />
+                  <input required value={form.address_line1} onChange={(event) => updateField("address_line1", event.target.value)} className={fieldClass} placeholder="Address line 1" />
+                  <input value={form.address_line2} onChange={(event) => updateField("address_line2", event.target.value)} className={fieldClass} placeholder="Address line 2 (optional)" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <input required value={form.city} onChange={(event) => updateField("city", event.target.value)} className={fieldClass} placeholder="City" />
+                    <input required value={form.state} onChange={(event) => updateField("state", event.target.value)} className={fieldClass} placeholder="State" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input required value={form.postal_code} onChange={(event) => updateField("postal_code", event.target.value)} className={fieldClass} placeholder="PIN code" />
+                    <input required value={form.country} onChange={(event) => updateField("country", event.target.value)} className={fieldClass} placeholder="Country" />
+                  </div>
+                  {addressError && <p className="text-xs text-red-600">{addressError}</p>}
+                  <button type="submit" disabled={savingAddress} className="w-full border border-black bg-white px-4 py-3 text-[10px] font-bold uppercase tracking-[0.16em] disabled:opacity-50">{savingAddress ? "Saving" : "Save address and continue"}</button>
+                </form>
+              ) : (
+                <div className="mt-5 space-y-3">
+                  {addresses.map((address) => (
+                    <label key={address.id} className={`block cursor-pointer border p-4 ${selectedAddressId === address.id ? "border-black bg-white" : "border-black/10 bg-white/60"}`}>
+                      <div className="flex gap-3">
+                        <input type="radio" name="saved-address" checked={selectedAddressId === address.id} onChange={() => onSelectAddress(address.id)} />
+                        <div className="text-xs leading-relaxed"><p className="font-bold uppercase tracking-[0.12em]">{address.label}</p><p className="mt-1">{address.full_name} · {address.phone}</p><p>{address.address_line1}{address.address_line2 ? `, ${address.address_line2}` : ""}, {address.city}, {address.state} {address.postal_code}</p></div>
+                      </div>
+                    </label>
+                  ))}
+                  <button type="button" onClick={() => setShowNewAddress(true)} className="w-full border border-black/20 bg-white px-4 py-3 text-[10px] font-bold uppercase tracking-[0.16em]">Add new address</button>
+                </div>
+              )}
+            </div>
             <button
               type="button"
-              onClick={onPlaceOrder}
-              className="mt-8 w-full bg-black px-5 py-4 text-xs font-bold uppercase tracking-[0.18em] text-white hover:bg-neutral-800"
+              disabled={!selectedAddress || showNewAddress}
+              onClick={() => selectedAddress && onPlaceOrder(selectedAddress)}
+              className="mt-8 w-full bg-black px-5 py-4 text-xs font-bold uppercase tracking-[0.18em] text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Place order
+              Continue to payment
             </button>
           </div>
         </div>

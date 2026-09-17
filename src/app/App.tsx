@@ -31,10 +31,13 @@ import {
   capturePayment,
   createOrder,
   createPaymentOrder,
+  createSavedAddress,
   deleteOrder,
   getOrdersByUser,
+  getSavedAddresses,
   markOrderPaid,
   supabase,
+  type SavedAddress,
 } from "./supabase";
 
 declare global {
@@ -194,7 +197,11 @@ export default function App() {
     total_amount: number | null;
     created_at: string;
     title: string;
+    delivery_phone: string | null;
+    delivery_address: string | null;
   } | null>(null);
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [orderHistoryOpen, setOrderHistoryOpen] = useState(false);
   const [orderHistory, setOrderHistory] = useState<
     Array<{
@@ -221,6 +228,23 @@ export default function App() {
     window.addEventListener("open-policy", handlePolicyNavigation);
     return () => window.removeEventListener("open-policy", handlePolicyNavigation);
   }, []);
+
+  useEffect(() => {
+    if (!checkoutOpen || !user?.id) return;
+    let mounted = true;
+    getSavedAddresses(user.id)
+      .then((addresses) => {
+        if (!mounted) return;
+        setSavedAddresses(addresses);
+        setSelectedAddressId((current) => current ?? addresses[0]?.id ?? null);
+      })
+      .catch((error) => {
+        if (mounted) window.alert(error instanceof Error ? error.message : "Unable to load addresses.");
+      })
+    return () => {
+      mounted = false;
+    };
+  }, [checkoutOpen, user?.id]);
 
   useEffect(() => {
     const handleCollectionAdd = (event: Event) =>
@@ -496,14 +520,23 @@ export default function App() {
     }
     setCartOpen(false);
     setGiftSetOpen(false);
+    setSelectedAddressId(null);
     setCheckoutOpen(true);
     window.history.pushState(null, "", "/checkout");
   };
-  const handlePlaceOrder = async () => {
+  const handleSaveAddress = async (
+    address: Omit<SavedAddress, "id" | "created_at">,
+  ): Promise<SavedAddress> => {
+    if (!user?.id) throw new Error("Please sign in before saving an address.");
+    const saved = await createSavedAddress(user.id, address);
+    setSavedAddresses((current) => [saved, ...current]);
+    return saved;
+  };
+  const handlePlaceOrder = async (address: SavedAddress) => {
     if (!user || cartItems.length === 0) return;
     const totalAmount = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     try {
-      const order = await createOrder(user.id ?? "", totalAmount, user.name);
+      const order = await createOrder(user.id ?? "", totalAmount, user.name, address);
       const titles = cartItems.map((item) => item.name).join(", ");
       const createdOrder = {
         ...order,
@@ -774,6 +807,11 @@ export default function App() {
                         ₹{Number(paymentOrder.total_amount ?? 0).toLocaleString()}
                       </span>
                     </div>
+                    <div className="border-b border-black/10 pb-3">
+                      <span className="text-black/50">Deliver to</span>
+                      <p className="mt-2 text-right font-semibold">{paymentOrder.delivery_phone}</p>
+                      <p className="mt-1 text-right text-sm leading-relaxed">{paymentOrder.delivery_address}</p>
+                    </div>
                     <div className="flex items-center justify-between">
                       <span className="text-black/50">Status</span>
                       <span className="font-semibold uppercase tracking-[0.12em]">
@@ -820,6 +858,10 @@ export default function App() {
         ) : checkoutOpen ? (
           <CheckoutSection
             items={cartItems}
+            addresses={savedAddresses}
+            selectedAddressId={selectedAddressId}
+            onSelectAddress={setSelectedAddressId}
+            onSaveAddress={handleSaveAddress}
             onBack={() => {
               setCheckoutOpen(false);
               window.history.pushState(null, "", "/");
