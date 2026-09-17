@@ -1863,6 +1863,18 @@ export function CheckoutSection({
               </div>
               {showNewAddress ? (
                 <form onSubmit={saveAddress} className="mt-5 space-y-3">
+                  {addresses.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAddressError("");
+                        setShowNewAddress(false);
+                      }}
+                      className="mb-2 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-black/55 hover:text-black"
+                    >
+                      <ArrowLeft size={12} /> Back to saved addresses
+                    </button>
+                  )}
                   <div className="grid grid-cols-2 gap-3">
                     <input required value={form.label} onChange={(event) => updateField("label", event.target.value)} className={fieldClass} placeholder="Label (Home)" />
                     <input required value={form.full_name} onChange={(event) => updateField("full_name", event.target.value)} className={fieldClass} placeholder="Full name" />
