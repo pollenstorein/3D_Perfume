@@ -320,7 +320,6 @@ export default function App() {
         return;
       }
       setAuthProvider(session.user.app_metadata.provider ?? "email");
-      returnToHome();
       if (mounted)
         setUser({
           id: session.user.id,
