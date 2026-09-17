@@ -19,12 +19,16 @@ create table if not exists public.user_addresses (
   phone text not null,
   address_line1 text not null,
   address_line2 text,
+  post_office text,
   city text not null,
   state text not null,
   postal_code text not null,
   country text not null default 'India',
   created_at timestamptz default timezone('utc'::text, now()) not null
 );
+
+alter table public.user_addresses
+  add column if not exists post_office text;
 
 alter table public.orders add column if not exists address_id uuid references public.user_addresses(id) on delete set null;
 alter table public.orders add column if not exists delivery_phone text;

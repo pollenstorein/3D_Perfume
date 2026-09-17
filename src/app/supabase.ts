@@ -48,7 +48,7 @@ export type SavedAddress = {
   full_name: string;
   phone: string;
   address_line1: string;
-  address_line2: string | null;
+  post_office: string | null;
   city: string;
   state: string;
   postal_code: string;
@@ -87,7 +87,7 @@ export async function createOrder(
   const trackingId = `KP-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const deliveryAddress = [
     address.address_line1,
-    address.address_line2,
+    address.post_office,
     address.city,
     address.state,
     address.postal_code,
@@ -136,7 +136,7 @@ export async function markOrderPaid(userId: string, orderId: string) {
 export async function getSavedAddresses(userId: string): Promise<SavedAddress[]> {
   const { data, error } = await supabase
     .from("user_addresses")
-    .select("id, label, full_name, phone, address_line1, address_line2, city, state, postal_code, country, created_at")
+    .select("id, label, full_name, phone, address_line1, post_office, city, state, postal_code, country, created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -150,7 +150,7 @@ export async function createSavedAddress(
   const { data, error } = await supabase
     .from("user_addresses")
     .insert({ user_id: userId, ...address })
-    .select("id, label, full_name, phone, address_line1, address_line2, city, state, postal_code, country, created_at")
+    .select("id, label, full_name, phone, address_line1, post_office, city, state, postal_code, country, created_at")
     .single();
   if (error) throw error;
   return data;

@@ -1788,7 +1788,7 @@ export function CheckoutSection({
     full_name: "",
     phone: "",
     address_line1: "",
-    address_line2: "",
+    post_office: "",
     city: "",
     state: "",
     postal_code: "",
@@ -1799,7 +1799,7 @@ export function CheckoutSection({
   const saveAddress = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setAddressError("");
-    if (Object.entries(form).some(([key, value]) => key !== "address_line2" && !value.trim())) {
+    if (Object.entries(form).some(([, value]) => !value.trim())) {
       setAddressError("Please complete all required address fields.");
       return;
     }
@@ -1881,7 +1881,7 @@ export function CheckoutSection({
                   </div>
                   <input required type="tel" value={form.phone} onChange={(event) => updateField("phone", event.target.value)} className={fieldClass} placeholder="Phone number" />
                   <input required value={form.address_line1} onChange={(event) => updateField("address_line1", event.target.value)} className={fieldClass} placeholder="Address line 1" />
-                  <input value={form.address_line2} onChange={(event) => updateField("address_line2", event.target.value)} className={fieldClass} placeholder="Address line 2 (optional)" />
+                  <input required value={form.post_office} onChange={(event) => updateField("post_office", event.target.value)} className={fieldClass} placeholder="Post office" />
                   <div className="grid grid-cols-2 gap-3">
                     <input required value={form.city} onChange={(event) => updateField("city", event.target.value)} className={fieldClass} placeholder="City" />
                     <input required value={form.state} onChange={(event) => updateField("state", event.target.value)} className={fieldClass} placeholder="State" />
@@ -1899,7 +1899,7 @@ export function CheckoutSection({
                     <label key={address.id} className={`block cursor-pointer border p-4 ${selectedAddressId === address.id ? "border-black bg-white" : "border-black/10 bg-white/60"}`}>
                       <div className="flex gap-3">
                         <input type="radio" name="saved-address" checked={selectedAddressId === address.id} onChange={() => onSelectAddress(address.id)} />
-                        <div className="text-xs leading-relaxed"><p className="font-bold uppercase tracking-[0.12em]">{address.label}</p><p className="mt-1">{address.full_name} · {address.phone}</p><p>{address.address_line1}{address.address_line2 ? `, ${address.address_line2}` : ""}, {address.city}, {address.state} {address.postal_code}</p></div>
+                        <div className="text-xs leading-relaxed"><p className="font-bold uppercase tracking-[0.12em]">{address.label}</p><p className="mt-1">{address.full_name} · {address.phone}</p><p>{address.address_line1}, {address.post_office}, {address.city}, {address.state} {address.postal_code}</p></div>
                       </div>
                     </label>
                   ))}
