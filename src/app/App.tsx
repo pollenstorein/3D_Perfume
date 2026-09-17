@@ -5,36 +5,36 @@ import { FRAGRANCES } from "./data";
 import { Footer } from "./footer";
 import giftGalleryOne from "./Images/4a.PNG";
 import {
-    CookiePolicySection,
-    OrdersShippingSection,
-    PrivacyPolicySection,
-    RefundPolicySection,
-    TermsSection,
+  CookiePolicySection,
+  OrdersShippingSection,
+  PrivacyPolicySection,
+  RefundPolicySection,
+  TermsSection,
 } from "./legal";
 import { CartDrawer, SideMenu, TopBar, type CartItem } from "./navigation";
 import {
-    BottleCarousel,
-    CheckoutSection,
-    CollectionPageWithBack,
-    FreshOrchidPageWithRecommendations,
-    GiftSetPage,
-    Hero,
-    IntroStories,
-    LostCherryPageWithRecommendations,
-    MomentSection,
-    PerfumeVariants,
-    PowerOfYouPageWithRecommendations,
-    PricingSection,
-    TrackBanner,
+  BottleCarousel,
+  CheckoutSection,
+  CollectionPageWithBack,
+  FreshOrchidPageWithRecommendations,
+  GiftSetPage,
+  Hero,
+  IntroStories,
+  LostCherryPageWithRecommendations,
+  MomentSection,
+  PerfumeVariants,
+  PowerOfYouPageWithRecommendations,
+  PricingSection,
+  TrackBanner,
 } from "./sections";
 import {
-    capturePayment,
-    createOrder,
-    createPaymentOrder,
-    deleteOrder,
-    getOrdersByUser,
-    markOrderPaid,
-    supabase,
+  capturePayment,
+  createOrder,
+  createPaymentOrder,
+  deleteOrder,
+  getOrdersByUser,
+  markOrderPaid,
+  supabase,
 } from "./supabase";
 
 declare global {
@@ -398,7 +398,7 @@ export default function App() {
   const handleGoogleSignIn = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: "https://3-d-perfume.vercel.app/" },
+      options: { redirectTo: "https://pollenstore.in/" },
     });
     if (error) throw new Error(error.message);
   };
