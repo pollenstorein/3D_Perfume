@@ -149,7 +149,7 @@ export function OrdersShippingSection({ onBack }: LegalProps) {
           ],
           [
             "Contact",
-            "If you have any questions about the information provided on our website or about a POLLEN product, please contact us.\n\nEmail: contactpollen@gmail.com\nWhatsApp: +91 969180954",
+            "If you have any questions about the information provided on our website or about a POLLEN product, please contact us.\n\nEmail: contactpollen@gmail.com\nWhatsApp: +91 9609180954",
           ],
         ]}
       />
